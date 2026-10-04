@@ -24,17 +24,27 @@ main 已增加只读 `spherewright_get_foundry_plan`：从目标产量计算多�
 
 ### 支持范围
 
+
 - Windows x64
 - 《戴森球计划》未发布 0.4 包目标 `0.10.35.29104`（实机恢复待验）；已发布 0.3.x 的历史本机验证为 `0.10.34.28529`
 - BepInEx `5.4.17`
-- 单人、和平模式（关闭黑雾/战斗）
-- 任意沙盒设置和资源倍率；它们只作为运行证据，不会扩展可调用能力
+- 单人。Owned world 的写入继续遵守现有和平模式策略；当前手工载入的精确 unowned session 可在显式双重授权后执行普通动作，不要求和平或被动模式。
+- 任意沙盒设置和资源倍率；它们只作为运行证据，不会扩展可调用能力。
+- 普通游戏动作不包含敌人/黑雾目标选择、攻击命令、武器控制或自主进攻炮塔控制。
 
-黑雾/战斗、多人或 Nebula、跨恒星曲速自动化，以及与任意第三方 Mod 的兼容性暂不保证。
+多人或 Nebula、跨恒星曲速自动化，以及与任意第三方 Mod 的兼容性暂不保证。黑雾侵略度只是遥测，不决定普通 unowned 动作权限。
+
+### 当前未拥有世界（开发源码）
+
+`Safety.AllowUnownedRichReads` 与 `Safety.AllowUnownedNormalWrites` 都默认 `false`，彼此独立。公开富读取仍只作用于玩家当前手工载入的精确 session；当 `AllowUnownedNormalWrites=false` 时，它保持原来的只读行为。普通动作权限要求同时启用 `Safety.AllowWrites` 和 `Safety.AllowUnownedNormalWrites`，并且只适用于当前精确 unowned session。它不会改变 `OwnedBySpherewright=false`，也不需要 Save Import、Resume 或其他 adoption/provenance 流程。
+
+`ReadAccessMode` 由富读取开关决定；写入授权是独立状态，因此 `WritesAllowed=true` 时公开模式仍可能是 `restricted`，也可能是 `observed_unowned`。关闭富读取不会阻止内部动作读取；它不会因此开放公开玩家、工厂、科研或 Overseer 读取。普通 Save 保存游戏当前已载入的原生存档身份，不改名、复制或创建 owned provenance。普通星际飞行不创建 Spherewright FlightCheckpoint；有限蓝图进度只保存在当前 session 内，换 world/session 或重启后不恢复。公开蓝图检查/导出、protected Journal、Save Import、Owned Resume 和 FlightCheckpoint 仍走各自独立的权限路径。黑雾 aggressiveness 是遥测，不作为写入门；直接进攻型战斗动作不受支持。
+
+以上为未发布开发 源码说明，不能当作已部署或实机验证能力。公开富读取在 `AllowUnownedNormalWrites=false` 时的行为保持不变。
 
 ### 0.4 开发中的蓝图与升级
 
-0.4源码还为错误空载布局补充窄范围正常回收：现有 `prepare_dismantle` / `commit_dismantle` 可处理默认、全空、无叠层/配送器/连接或缓存引用的一级仓2101，返还一个仓并核验其他实体及库存不变。不会自动重建或搬迁；有货/过滤/堆叠仓不支持。离线、冷部署、本机单个空仓回收及单独正常重新放置已通过；实际接线生产与覆盖保存/恢复另验，详见[IFX-101](./docs/incident-fix-log.md#ifx-101--合法但接线过近的空仓缺少正常回收纠正入口)，不在已发布0.3.3中。
+0.4源码还为错误空载布局补充窄范围正常回收：现有 `prepare_dismantle` / `commit_dismantle` 可处理默认、全空、无叠层/配送器/连接或缓存引用的一级仓2101，返还一个仓并核验其他实体及库存不变。不会自动重建或搬迁；有货/过滤/堆叠仓不支持。源码支持不等于接线生产或保存/恢复的实机验收；该能力不在已发布0.3.3中。
 
 `prepare_move` 的新增可选 `surfacePreview` 提供最长32m短路径上的有界地表采样，帮助Agent在提交前识别水面/岸边风险；缺失证据不代表陆地，未发现风险也不保证无障碍或能保持步行。它不自动寻路、不改变正常Move准入，抵达后仍须复读落地、速度和能量。此为未发布0.4开发能力，离线、部署与实机状态见[API证据](./docs/research/game-api-foundry.md)。
 
@@ -44,9 +54,9 @@ main 已增加只读 `spherewright_get_foundry_plan`：从目标产量计算多�
 
 普通分拣器预检新增有界单传送带接点微调：只处理Agent明确指定的带与仓储箱2101/生产设备/研究站，返回计划槽位、接点和偏移量，不搜索邻带或移动建筑。原生角度、碰撞、材料、无人机施工与逐端核验仍保留；几何变化后必须重新预检。该切片已通过离线回归，尚待同批实机接线验证，不包含在0.3.3中；见[API证据](./docs/research/game-api-foundry.md)。
 
-现有建筑详情的 `sorterEndpoints` 可提供有界的原生槽位位置、朝向和占用信息，帮助 Agent 按实际端口规划接线，而非反复猜建筑中心距离。传送带虚拟端口不代表真实槽位空闲，仍须正常预检；本切片目前仅源码/离线验证，实机状态见 [IFX-041](./docs/incident-fix-log.md#ifx-041--多次接线拒绝时缺少端口几何并把共享带误称为纯水带)。
+现有建筑详情的 `sorterEndpoints` 可提供有界的原生槽位位置、朝向和占用信息，帮助 Agent 按实际端口规划接线，而非反复猜建筑中心距离。传送带虚拟端口不代表真实槽位空闲，仍须正常预检；源码和离线测试不等于原生施工的实机验证。
 
-普通2011/2012分拣器建造可指定 `initialSorterFilterItemId`，让过滤随原生预建筑在第一次取货前生效；预检返回计划过滤，建成后核对过滤标记及两端连接。默认0仍为无过滤，事后配置不能消除已经进仓的混料。该修复目前为0.4源码/离线验证，安装与实机验收状态见[IFX-040](./docs/incident-fix-log.md#ifx-040--普通建造缺少初始过滤事后配置前已发生混料)，不包含在已发布0.3.3中。
+普通2011/2012分拣器建造可指定 `initialSorterFilterItemId`，让过滤随原生预建筑在第一次取货前生效；预检返回计划过滤，建成后核对过滤标记及两端连接。默认0仍为无过滤，事后配置不能消除已经进仓的混料。源码和离线测试不代表安装或实机验收，不包含在已发布0.3.3中。
 
 新增的显式蓝图布局可与Foundry物料意图组合为含全部建材、内部流向和逐对象步骤的有限计划，并复用原来的施工/取消/续建入口。输送预算使用原生带速与普通2011/2012分拣器的跨格往返时间约束流量；未知速率和高级堆叠分拣器阻止此组合计划通过，但不缩减普通蓝图的独立支持范围。它不是任意自动布局，也不把满电单件理论预算当作公平分流或实测吞吐。普通2011/2012分拣器另有受控正常拆除，允许缺端修复但拒绝错配的存在边，核对货物count/inc及其他连接。空载和携1件金刚石的2011拆除、分别重建及普通保存已在本机验证；2012拆除、非零inc货物、修复后恢复、新输送预算和完整模块施工仍待同批实机验收。
 
@@ -62,6 +72,8 @@ main 已增加只读 `spherewright_get_foundry_plan`：从目标产量计算多�
 
 ### 安装与连接
 
+仅在当前开发源码中，才可把配置项 `Safety.AllowUnownedRichReads` 设为 `true`（默认 `false`），以只读方式观察当前手工载入的未拥有世界。`AllowWrites` 可保持 `false`；此设置不改变所有权、写入、导入或保存权限。该配置不属于已发布 0.3.x 包的能力。
+
 使用 Thunderstore Mod Manager 或 r2modman 时，安装 `Arcueid_77-Spherewright` 及其 BepInEx 依赖，并从对应 Mod profile 启动一次游戏。MCP 可执行文件位于：
 
 ```text
@@ -70,14 +82,17 @@ BepInEx/plugins/Arcueid_77-Spherewright/Spherewright.Mcp.exe
 
 把这个 EXE 注册为外部 Agent 应用中的本地 stdio MCP Server；命令行不需要也不应附带运行时描述文件、认证 token 或存档名。手动安装请下载 [GitHub Releases](https://github.com/AvaloNero/Spherewright/releases) 中同版本的 `Spherewright-<version>-win-x64.zip`，并按[发行版安装说明](./docs/release-installation.md)操作。
 
-Spherewright 默认只能观察。需要实际操作时，在所用 profile 的 `BepInEx/config/dev.spherewright.bridge.cfg` 中设置：
+Spherewright 默认只能观察。Owned world 的普通操作仍需在所用 profile 的 `BepInEx/config/dev.spherewright.bridge.cfg` 中启用全局写开关 `AllowWrites`。
+
+对于开发源码中的手工载入 unowned session，必须同时启用 `AllowWrites` 和 `AllowUnownedNormalWrites`：
 
 ```ini
 [Safety]
 AllowWrites = true
+AllowUnownedNormalWrites = true
 ```
 
-然后重启游戏和 MCP 连接。所有写动作仍会执行 `fresh read → prepare → commit → terminal/readback`，不能绕过游戏成本和耗时。
+两个写开关都必须为 true；它们不设置所有权，也不要求启用 `AllowUnownedRichReads` 或 `AllowUserSaveImport`。这项权限只适用于当前精确 session。所有写动作仍执行 `fresh read → prepare → commit → terminal/readback`，并遵守 DSP 的材料、能量、距离和耗时。
 
 ### 从新档开始
 
@@ -88,6 +103,10 @@ AllowWrites = true
 5. Agent 在第一次行动前应读取随 MCP 一起发布的 opening-movement playbook，避免在出生舱旁反复撞同一路径。
 
 ### 读取旧档继续玩
+
+开发源码还支持在不导入或认领存档的情况下操作当前手工载入的 unowned session：设置 `Safety.AllowWrites=true` 与 `Safety.AllowUnownedNormalWrites=true` 后使用普通动作。保存仍写入当前原生存档身份；该路径不创建 owned copy 或恢复票据。它不要求 `AllowUnownedRichReads`，也不启用 Save Import。
+
+如果要单独创建 owned copy，再按下面的 Save Import 流程操作：
 
 1. 除 `Safety.AllowWrites=true` 外，再设置 `Safety.AllowUserSaveImport=true`，然后重启游戏。
 2. **由玩家在《戴森球计划》菜单中手动选择并载入目标和平单人存档。** Spherewright 不提供任意存档选择器，也不会枚举本机存档。
@@ -109,7 +128,7 @@ AllowWrites = true
 
 ## English
 
-Unreleased v0.4 source adds narrowly scoped native recovery of one empty default2101 warehouse through the existing two-phase dismantle tools: no layers, add-on, connections or cached references; exactly one building item is returned, with surviving entities and inventory preserved. It does not automatically move/rebuild anything or remove occupied/filtered/stacked storage. Offline validation, cold deployment, one local live recovery and a separate normally built replacement have passed; connected production and a covering save/resume remain pending checks (IFX-101).
+Unreleased v0.4 source adds narrowly scoped native recovery of one empty default2101 warehouse through the existing two-phase dismantle tools: no layers, add-on, connections or cached references; exactly one building item is returned, with surviving entities and inventory preserved. It does not automatically move/rebuild anything or remove occupied/filtered/stacked storage. Connected production and covering save/resume require separate matching-build live validation.
 
 Spherewright is a structured, safety-first control bridge for **Dyson Sphere Program**. It lets an external MCP-capable Agent observe the live game and perform bounded actions through normal DSP systems—without embedding an LLM, editing saves, injecting items, or driving the UI with screenshots and keyboard/mouse macros.
 
@@ -123,21 +142,29 @@ The last verified runtime evidence includes the exact owned-primary `0.10.34.285
 - Structured reads for the player, progression, recipes, build catalog, resources, factory entities—including detailed logistics-station state—power, the local star system, actions, the per-save gameplay journal, a bounded v0.4 multi-planet native production window with independently recomputed theoretical capacity/utilization, cursor-stable per-planet power/logistics plus global-research summaries, and a versioned same-tick diagnostic bundle that joins those public domains without save identities, paths, or write credentials.
 - A directly discoverable MCP Agent playbook resource for session entry, terminal polling, energy and harvest approach, construction/production proof, saves, flight recovery, and bounded escape from landing-capsule or factory collisions; the same concise file is included in release packages as `AGENT-PLAYBOOK.md`.
 - Two-phase `prepare → commit` actions for movement, harvesting, handcrafting, research, construction, building configuration—including no-inventory-mutation logistics-station storage and output-belt selection—player/storage and conservation-checked station-fleet transfers, refuelling, saving, and recovery.
-- Native-tick same-star flight with a separately saved, expiring pre-flight checkpoint that remains reusable only while that exact flight needs recovery, then loses its capability on success and retires after the covering primary save.
-- Exact owned-world restart handoff: healthy planned restarts default to the ticket-bound primary; real quarantine may use a qualifying fixed LastExit. Explicitly user-confirmed recovery can instead bind one newer fixed LastExit to its embedded owned identity, approved tick, known progress floor and unchanged full-file evidence, without fallback. Tickets bind the per-save journal identity, tracking boundary and durable sequence; missing/recreated/truncated journals block loading. The exact expired-primary `28529 → 29088` reauthorization has one cold-deployed local live result; it is not evidence of a later restart, fresh factory audit, or production continuity. No save picker or enumeration of unrelated saves is exposed; see [current status](docs/current-status.md).
+- Native-tick same-star flight uses the protected expiring pre-flight checkpoint for owned sessions. The exact authorized unowned session uses the same normal flight action and state checks without creating or requiring a Spherewright checkpoint; ordinary unowned flight failure does not imply checkpoint recovery.
+- Exact owned-world restart handoff: healthy planned restarts default to the ticket-bound primary; real quarantine may use a qualifying fixed LastExit. Explicitly user-confirmed recovery can instead bind one newer fixed LastExit to its embedded owned identity, approved tick, known progress floor and unchanged full-file evidence, without fallback. Tickets bind the per-save journal identity, tracking boundary and durable sequence; missing/recreated/truncated journals block loading. No save picker or enumeration of unrelated saves is exposed; see [current status](docs/current-status.md).
 - Explicit handoff for a player-loaded save: Spherewright first prepares an exact-session, no-game-side-effect plan and the Agent then asks for confirmation in the conversation. Only a subsequent clear approval may create a separately named owned copy; the original is never overwritten, renamed, deleted, or exposed, and journaling starts at the import boundary.
 - Per-save first-event journaling for manual output, production-line output, technology selection, and upgrade selection, including wall-clock/in-save time plus the durable-through sequence, pending-write flag, and persistence error.
 - Readback, state hashes, short-lived plans, idempotency, single-flight execution, and write quarantine when a result cannot be proved.
 
+## Development source: the current unowned world
+
+The local source exposes two independent opt-ins for the exact manually loaded session: `Safety.AllowUnownedRichReads` and `Safety.AllowUnownedNormalWrites`, both default `false`. With `AllowUnownedNormalWrites=false`, unowned observation remains read-only. Normal action authority requires both `Safety.AllowWrites=true` and `Safety.AllowUnownedNormalWrites=true`; it never changes `OwnedBySpherewright=false`. Public rich-read capabilities remain controlled only by `AllowUnownedRichReads`, while an internal action reader supports writes when public rich reads are off. The resulting `ReadAccessMode` and `WritesAllowed` values are independent.
+
+Normal Save targets the currently loaded native save identity without renaming, cloning, importing, adopting, or creating Spherewright provenance. Unowned interplanetary flight follows the ordinary flight lifecycle without a Spherewright FlightCheckpoint. Finite blueprint progress is in memory and bound to the current session; world/session replacement or process restart discards it. Public blueprint inspection/export remains on its existing owned-world path.
+
+Unowned normal actions have no Peaceful, Passive, or aggressiveness authorization gate. Dark Fog aggressiveness, when available, is telemetry only. The ordinary action surface does not add enemy targeting, attacks, weapon control, or autonomous offensive turret control. Save Import, Owned Resume, and protected FlightCheckpoint reload remain separate provenance-bound workflows. These are local unreleased source capabilities, not deployed or live-validated features; see [current development status](docs/current-status.md).
+
 Spherewright is a control layer, not an autonomous planner. The external Agent decides what to do; Spherewright supplies typed state, legal primitives, and evidence-backed results.
 
-Unreleased v0.4 development includes bounded native blueprint inspection/export/site assessment and a separate prepare/commit executor with per-object material receipts, cancellation and fresh restart reconciliation. One six-object module has local live acceptance for that lifecycle, external connections and sustained output (approximately `29.989` graphite/min); data/site reads remain `executable=false`. The read-only `spherewright_get_governor_plan` compares supported upgrades, added machines and module copies while separating measured production/consumption, target demand, selected-buffer changes and supply shortfalls. It neither executes an expansion nor certifies balance. The locked `31 → 62/min` declaration passed its bounded live observation gate of `37128` effective game ticks. These results do not close broader Foundry, sustained-supply or whole-v0.4 gates. See [current status](docs/current-status.md). These tools are not present in released v0.3.x packages.
+Unreleased v0.4 development includes bounded native blueprint inspection/export/site assessment and a separate prepare/commit executor with per-object material receipts, cancellation and fresh restart reconciliation. Data/site reads remain `executable=false`. The read-only `spherewright_get_governor_plan` compares supported upgrades, added machines and module copies while separating measured production/consumption, target demand, selected-buffer changes and supply shortfalls. It neither executes an expansion nor certifies balance. Source and offline validation do not close sustained-supply or whole-v0.4 acceptance gates. See [current status](docs/current-status.md). These tools are not present in released v0.3.x packages.
 
 Development site previews also expose an independent advisory native-coverage/full-base-load power assessment, including existing peak loads and newly energized consumers; it is not sustainable fuel proof or permission to build. Governor retains a pre-execution declaration and measures only the union of valid game-tick windows, keeping target-chain findings separate from unattributed planet warnings and never turning an inventory observation interval into a production window. The remaining acceptance boundaries are summarized in [current status](docs/current-status.md).
 
 An optional Governor `parallelExpansionBlueprint` reuses the existing full Foundry budget for the additional rate (target minus measured nonzero baseline), including every explicit module object, native site, full-base-load power and rated transport. Cost scopes disclose unplanned external infrastructure rather than treating it as free. The returned intent/construction hash goes through the existing fresh finite-build protocol; the comparison remains read-only, and post-expansion observation retains the original locked declaration without resubmitting the layout. This new comparison is source/offline evidence, not completed live expansion or a new package.
 
-Unreleased 0.4 ordinary sorter construction also accepts `initialSorterFilterItemId`, installed through the native prebuild before the first pickup. A nonzero request requires an exact filter echo before MCP exposes its plan; a mixed/older Plugin cannot silently produce an unfiltered build. Default0 remains unfiltered. Offline tests pass; matching-build deployment and live acceptance remain pending in [IFX-040](./docs/incident-fix-log.md#ifx-040--普通建造缺少初始过滤事后配置前已发生混料). This does not clean existing stock or guarantee delivery through a mixed belt.
+Unreleased 0.4 ordinary sorter construction also accepts `initialSorterFilterItemId`, installed through the native prebuild before the first pickup. A nonzero request requires an exact filter echo before MCP exposes its plan; a mixed/older Plugin cannot silently produce an unfiltered build. Default0 remains unfiltered. A source implementation does not establish matching-build live acceptance. This does not clean existing stock or guarantee delivery through a mixed belt.
 
 Unreleased 0.4 also adds cargo-preserving filter changes for ordinary inserting sorters and explicit single-warehouse `storage-capacity` configuration: native automation limits, existing-item reservations, empty/same-item filters and clearing reservations. No stock is deleted or moved, held cargo still goes to the same destination, and a successful configuration does not imply a recovered production line. The new slice has 1,066 passing offline tests and a clean full Release build; installation/live recovery remain pending. See the [configuration protocol](./docs/protocol.md#warehouse-capacity-and-reservation-configuration-04-development-slice).
 
@@ -163,7 +190,7 @@ DSP native gameplay systems
 
 ## Safety model
 
-Writes are disabled by default. When enabled, every gameplay mutation is bound to a current owned session and follows a fresh read, a non-mutating prepare, one idempotent commit, and terminal/readback verification.
+Writes are disabled by default. Every gameplay mutation follows a fresh read, a non-mutating prepare, one idempotent commit, and terminal/readback verification. Owned sessions retain their existing authority rules. An exact manually loaded unowned session has separate normal-action authority only when both `AllowWrites` and `AllowUnownedNormalWrites` are enabled; that authority never changes ownership.
 
 Spherewright deliberately does not use:
 
@@ -183,11 +210,11 @@ The currently supported runtime scope is deliberately narrow:
 - Windows x64
 - Dyson Sphere Program (unreleased 0.4 package target: `0.10.35.29104`, live recovery pending; released v0.3.x historical local validation: `0.10.34.28529`)
 - BepInEx `5.4.17.0`
-- single-player
-- peaceful mode
+- single-player; owned-session write policies retain their existing Peaceful requirement, while exact unowned normal-action authority has no Peaceful/Passive gate
 - any sandbox setting or resource multiplier; both are reported in session evidence and do not authorize additional actions
+- direct offensive combat actions are unsupported
 
-The validated reference world remains non-sandbox with 1× resources. v0.3.3 locally validated both a peaceful sandbox 1× save and a peaceful non-sandbox 100× save through import, ordinary gameplay, construction, and normal saving. Spherewright does not currently guarantee Dark Fog/combat, multiplayer or Nebula, broad third-party Mod compatibility, an arbitrary save picker, or loading an arbitrary caller-supplied save name.
+The validated reference world remains non-sandbox with 1× resources. v0.3.3 locally validated both a peaceful sandbox 1× save and a peaceful non-sandbox 100× save through import, ordinary gameplay, construction, and normal saving. Direct offensive combat actions, multiplayer or Nebula, broad third-party Mod compatibility, an arbitrary save picker, and loading an arbitrary caller-supplied save name remain unsupported. Dark Fog aggressiveness is telemetry only and does not change normal-action authorization.
 
 The versioned Windows release package includes a self-contained MCP server; using it does not require the repository, source code, or a .NET SDK. See [release installation](./docs/release-installation.md).
 
@@ -253,6 +280,8 @@ To repeat the package integrity and self-contained MCP `initialize`/`tools/list`
 
 5. Register that stdio command with your MCP host.
 
+For the development source build, set `Safety.AllowUnownedRichReads=true` to expose bounded rich reads from the exact currently loaded unowned world. For the development source build, set both `Safety.AllowWrites=true` and `Safety.AllowUnownedNormalWrites=true` to authorize ordinary actions in that exact session. The two unowned settings are independent: enabling normal actions does not enable public rich reads, and enabling rich reads does not authorize writes. Neither setting grants ownership or protected provenance. `AllowUserSaveImport` remains a separate workflow. Released packages do not gain these source-only capabilities from documentation.
+
 Runtime descriptors and credentials are protected for the current Windows user and rotate when the Plugin starts. Do not copy them into logs, issues, or configuration files.
 
 ## Quick start
@@ -263,7 +292,8 @@ Leave DSP at its idle main menu, set `Safety.AllowWrites=true`, restart DSP, and
 
 ### Continue an existing save
 
-For a **previously owned** world whose 24-hour restart credential has expired, development 0.4 adds `reauthorize_expired_primary` to the existing resume flow: preview the exact primary and original Journal, show the disclosure, then wait for a new explicit confirmation before commit. It does not import a new copy, extend the old credential, select arbitrary saves or reconstruct history. Evidence drift refuses loading; interrupted attempts require manual reconciliation. The exact `28529 → 29088` path has one cold-deployed local live result; the exact `29088 → 29104` extension is still awaiting live recovery. See [current status](docs/current-status.md) and [the playbook](docs/agent-playbook.md#expired-planned-restart-credential).
+For a development source build, a manually loaded unowned save can receive ordinary normal actions when both `Safety.AllowWrites=true` and `Safety.AllowUnownedNormalWrites=true`. Normal Save uses that loaded native save identity; it creates no owned copy or resume ticket. Rich reads and Save Import remain independently controlled.
+For a **previously owned** world whose 24-hour restart credential has expired, development 0.4 adds `reauthorize_expired_primary` to the existing resume flow: preview the exact primary and original Journal, show the disclosure, then wait for a new explicit confirmation before commit. It does not import a new copy, extend the old credential, select arbitrary saves or reconstruct history. Evidence drift refuses loading; interrupted attempts require manual reconciliation. See [current status](docs/current-status.md) and [the playbook](docs/agent-playbook.md#expired-planned-restart-credential).
 
 Set both `Safety.AllowWrites=true` and `Safety.AllowUserSaveImport=true`, restart DSP, and manually load the intended peaceful single-player save. Ask the Agent to prepare an import. It must show the returned disclosure and wait for a later explicit confirmation from you before commit creates a separate `Spherewright_Imported_*` copy. The original save is not overwritten, renamed, deleted, or selected by the import API. Sandbox state and resource multiplier are reported but do not block the import or later normal actions. From then on, both you and the Agent should continue in that copy; after restart, leave DSP at the main menu and use protected resume. After any manual play in the owned copy, the Agent must discard stale observations and plans, read the live state again, and prepare later writes against the current state hashes.
 
@@ -275,7 +305,7 @@ Repository evidence distinguishes offline build/test and package checks from loc
 
 Local blueprint/Governor throughput results do not by themselves verify declaration restoration after restart, 2012 sorter removal, nonzero-inc cargo preservation, post-repair resume or the complete composed transport budget. Their narrower historical evidence must be reconciled independently. Cross-computer and final-package recovery validation also remain separate from local-live recovery.
 
-The development source composes an explicitly chosen blueprint layout with Foundry intent, complete object costs, directed flow allocations and finite dependency steps through the protected build/cancel/resume executor. It is not arbitrary auto-layout, fair splitting or measured throughput. Current operational state, completed bounded stages and remaining live gates are kept in [docs/current-status.md](docs/current-status.md); the [save diary](docs/gameplay-timeline.md) retains the detailed historical record.
+The development source composes an explicitly chosen blueprint layout with Foundry intent, complete object costs, directed flow allocations and finite dependency steps through the protected build/cancel/resume executor. It is not arbitrary auto-layout, fair splitting or measured throughput. Current public source capabilities and remaining validation boundaries are kept in [docs/current-status.md](docs/current-status.md).
 
 The release gates live in [ROADMAP.md](./ROADMAP.md). The current save's complete decision, research, upgrade, and first-output chronology lives in its [save diary](./docs/gameplay-timeline.md), indexed with every owned save in [docs/save-diaries/](./docs/save-diaries/README.md). The short version:
 

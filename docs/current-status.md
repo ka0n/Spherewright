@@ -1,27 +1,36 @@
-# Spherewright 当前快照
+# Current development status
 
-更新：2026-10-05（Asia/Singapore）。阶段原件与独立验收统一见[材料库存与恢复证据](evidence/2026-10-04/material-inventory-cuts.md)，本文件覆盖更新，不作历史日记。
+This page describes the public development source. It is not a report of an installed Plugin, an active game session, or completed live acceptance. Consult the actual session state and the matching package before using a capability.
 
-## 身份、安装与保存
+## Current unowned sessions
 
-- main/source `4ac502c`，Windows Core CI 37213851353 success；安装仍为 `b1557bb` 同批 cohort：4 Plugin +224 MCP 文件匹配、64 tools/1 resource、playbook匹配，native `0.10.35.29104`。该 cohort 的2551/2551离线测试及必要冷部署已核实；脚本提交不等于游戏程序集重新安装。
-- 当前同一 owned primary/session：最后正常保存 `92128739/R1`，最后独立观察 `93031047/R1`；durable Journal `100`、pending=false/error=null；external accepted `9` / lifetime `149`。外部计数不等于revision或Journal，未清零；第10写门仍保留。
-- 所有原执行句柄已终态，无unknown、写入在途或未核销accepted；当前新写仍blocked。没有未保存的accepted游戏动作，但保存点后的自然生产不是已保存证据。Steam/DSP保持运行；用户取消的专门Host退出存活测试未做，也不会为Codex重启或对话结束关游戏。
+The exact manually loaded world can use two independent, default-off settings:
 
-## 已完成与证据边界
+- `Safety.AllowUnownedRichReads=true` enables bounded public rich reads and reports `ReadAccessMode=observed_unowned`. Owned worlds retain normal rich reads.
+- `Safety.AllowWrites=true` together with `Safety.AllowUnownedNormalWrites=true` enables ordinary actions on the exact current unowned session. This does not enable public rich reads when `AllowUnownedRichReads=false`.
 
-- 1210三级链的既有施工、启动非零、正常保存、protected restart及恢复后再次输出正例已完成，不重做5326–5334、石矿/酸/869或输出线路。保存与恢复的身份和Journal连续性见阶段证据；这不是全源配平/有限缓存排除通过。
-- 既有完整工厂基线是60页、5945 built、0 prebuild、11620互逆边，capture tick90521995；不是此次恢复后的新捕获。资源耗尽差异保留独立证明，1213/node42已核销；不把矿点减少当整台矿机失效。
-- 上一只读实验 `f19264fa…:1–2526` / root `c5df8553…:1`：2396读/0写，末段27378连续ticks，1210原生精确产出4，低于该时长最低要求8；有155tick缺口，未达36000门。氢、重氢各自库存区间净降48/6，不能拼成同步计数，也不能把氢循环毛产量当净供给。Source allocation、finite-buffer exclusion及完整Gate2仍false，不重复长窗。
+Neither setting grants ownership. `OwnedBySpherewright` remains false; reads never grant write authority. The private action reader can obtain the state needed by authorized actions without changing the public read surface. Dark Fog aggressiveness is nullable telemetry, not an unowned authorization gate. The action surface includes no direct offensive combat commands.
 
-## 当前唯一 blocker
+Normal unowned Save targets the current native save identity without import, adoption, an owned copy, or a protected resume ticket. Unowned interplanetary flight creates no Spherewright FlightCheckpoint. Finite unowned blueprint progress is bound to the current session and process, and is discarded after replacement or restart. Public blueprint inspection/export, protected Journal, Governor, Save Import, Owned Resume, and checkpoint reload retain their separate ownership and provenance requirements.
 
-- 最新 `14da0b2f…:1–11` 完成9读/0写；独立root `f2cfd9fb…:1` 核原件、身份/S/J、配置、完整native货物路径和功率。受保护执行2993.7943ms、root离线验收约1055ms，未关闭/加载/保存游戏。旧4165出口的静态追踪覆盖100对象；fresh验证限12对象cut、3台火电及3条完整native路径，不能称100对象均已fresh预检。
-- 石墨3965→4185→4165经4190/4191送往火电3058/3060/3062及超级磁场环3404。3965仍idle、石墨输出20；六只出口/火电入口分拣器各持料1。3404/r103输入均非零、输出1205为10且idle；三台火电实际产生3651/3959/3944 J/t，`isWorking=false`不是停止发电证据。N3 full-serve、generatorRatio约0.109；燃料库存未观察，不能把J/t计成件数。
-- 石墨native路径92/140/142分别存113/77/65件，均不在上一70条主链候选路径选择中。旧cut仍是其明确范围的完整观察，不是全厂/全部副产物覆盖；空scope-gap列表不能证明未选择的支路。氢源受石墨下游需求/积压限制的线索已成立，尚未证明一种可持续去路或完整修复方案。
+## Material inventory cuts
 
-## 下一阶段与禁止重放
+`spherewright_inspect_factory_entity` optionally accepts `materialInventoryObjectIds`: at most 256 unique positive built-object IDs in the current local factory. It uses the same public rich-read policy as factory inspection: owned, or exact observed-unowned with rich reads enabled. Normal write authorization alone does not make the public query readable.
 
-root先用既有拓扑、runtime配方及真实终端需求，为石墨副产物选择直接服务1210的最小去路，重新核整链供需、氢净供给、材料/功率预算及最难接口；必要时只读/prepare-only。整案未重新取得可执行资格前，不施工、批量搬料/手搓、清仓制造短暂吞吐或转入其他Gate。
+A cut captures selected buffers and complete identity-verified native cargo paths at one game tick. Each path and cargo stack is counted once. The existing cell, member, cargo, and object budgets remain enforced; incomplete or invalid coverage is unknown, never zero. Do not add overlapping paths, prorate a path to selected belts, or stitch cuts from different ticks. A stock observation does not prove production, flow, source allocation, sustainable supply, or balance.
 
-已闭合的库存预览、连续实验和边界读取均已消费，不复用旧声明、token或句柄，不自动延长/重放；无待执行动作。只读正例、短窗、连续信用、保存及真实恢复分别记证据，不宣布0.4完成或打包通过。
+## Validation and remaining boundaries
+
+Offline validation covers the read/write authority split, exact-session gates, protected provenance, material-cut budgets and duplicate-cargo rejection, and the existing Contracts, Core, MCP, and offline client checks. Local build and test results do not establish Unity behavior or live recovery for this combined source. The integration has no new deployment or live acceptance claim.
+
+Broader sustained-supply and finite-buffer exclusion, complete Foundry/Governor acceptance, departure preparation, and cross-computer package validation remain separate gates in [ROADMAP.md](../ROADMAP.md). Ordinary materials, native construction, fresh prepare/commit, single-flight, idempotency, terminal observation, and unknown-outcome quarantine remain mandatory.
+
+## Historical upstream material-source audit (2026-10-05, Asia/Singapore)
+
+The upstream audit used source `4ac502c` and the installed `b1557bb` cohort with native `0.10.35.29104`. Its installation, save and recovery evidence belongs to that earlier cohort and owned world; it is not deployment or live acceptance of this Phase-2 integration. The earlier 1210 chain had produced nonzero output, been normally saved and recovered through protected restart, and produced again. Its complete factory baseline was captured at tick 90521995 (5945 built objects, no prebuilds, 11620 reciprocal edges), rather than after the later recovery. The latest normal save was tick 92128739/R1/J100; the later read-only observation was tick 93031047/R1 with unchanged durable Journal. Natural production after that save is not saved evidence.
+
+The later source experiment observed 120 samples and 2396 reads with no writes. A 155-tick gap left only 27378 continuous qualifying ticks, below the 36000-tick gate. Exact native 1210 output in that segment was four items, below the minimum eight. Hydrogen and deuterium stocks fell by 48 and six items at their separate cut timestamps; neither these cuts nor hydrogen recycling gross output prove synchronized net supply. Full source allocation, finite-buffer exclusion, sustained supply, Governor and complete Gate 2 remain unproved.
+
+The bounded graphite follow-up traced 100 objects in the historical topology, then freshly inspected a 12-object cut, three complete native paths and three generators. Cracker 3965 remained idle with graphite output 20. Its outlet 4185 fed belt 4165, through 4190/4191 toward graphite-burning generators 3058/3060/3062 and assembler 3404. The assembler had all three inputs present and ten super magnetic rings in its output, while idle. The generators produced 3651/3959/3944 J/t; `isWorking=false` does not prove stopped generation, and fuel inventory was not observed. Network N3 was fully served with generator ratio about 0.109; this observation is not a rated power budget for new construction.
+
+Graphite paths 92/140/142 held 113/77/65 items and were outside the earlier 70-path candidate selection. Those earlier cuts remain complete within their declared selection; an empty observed scope-gap list cannot prove coverage of unselected byproduct branches. This supports investigating graphite downstream demand/backpressure as a hydrogen-source constraint, but proves neither a sustainable destination nor a complete repair. The next qualification must use actual terminal demand and runtime recipes for a minimal graphite destination serving 1210, account for hydrogen recycling, and verify the complete source/route/consumer, material, power and interface budget. Until the full plan is executable, only bounded reads and prepare-only checks follow; no construction, bulk material movement, buffer clearing or repeated long experiment is implied. The historical checks added no save, exit or load; the dedicated Host-exit survival test was not performed. See the [material-source audit](evidence/2026-10-04/material-inventory-cuts.md) for the dated observation boundaries.
