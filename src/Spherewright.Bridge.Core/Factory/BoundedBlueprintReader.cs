@@ -134,8 +134,24 @@ public static class BoundedBlueprintReader
         }
         if (reader.ReadInt32() != 1) throw Invalid("blueprint_patch_unsupported");
         if (reader.ReadByte() != 0) throw Invalid("blueprint_reform_unsupported");
-        if (stream.Position != stream.Length) throw Invalid("blueprint_trailing_data");
+        ConsumeSupportedBlueprintTweaksTrailer(reader, stream);
         return result;
+    }
+
+    private static void ConsumeSupportedBlueprintTweaksTrailer(BinaryReader reader, MemoryStream stream)
+    {
+        if (stream.Position == stream.Length) return;
+        // BlueprintTweaks v4 appends this Export postfix even with no custom payload:
+        // version=4, legacyData=false, anchorType=0, autoReformMode=0, customSerializers=false.
+        // Only this exact observed five-byte form is supported; every other suffix stays fail-closed.
+        if (stream.Length - stream.Position != 5
+            || reader.ReadByte() != 4
+            || reader.ReadByte() != 0
+            || reader.ReadByte() != 0
+            || reader.ReadByte() != 0
+            || reader.ReadByte() != 0
+            || stream.Position != stream.Length)
+            throw Invalid("blueprint_trailing_data");
     }
 
     // Blueprint shape/parameter support must not broaden when the separate upgrade allowlist grows.

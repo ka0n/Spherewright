@@ -7,6 +7,20 @@ namespace Spherewright.Bridge.Core.Tests;
 // Synthetic structural fixtures, not native MD5F signatures or live evidence.
 public sealed class BoundedBlueprintReaderTests
 {
+    private const string CurrentGameBlueprintTweaksV4OneTeslaTower =
+        "BLUEPRINT:1,10,0,0,0,0,0,0,639267245837041737,0.10.35.29104,New%20Blueprint,,,,\"H4sIAAAAAAAACmNiQAWMUAxh/2dgOAFlMoKFZ/3//x/En8mhg6TngOQ2EP0fCtCMhJjHAiIAUK9Cjm4AAAA=\"1254E583D2F91540990DD1DAEFE838EC";
+
+    [Fact]
+    public void ParsesExactCurrentGameOneTeslaTowerWithVerifiedBlueprintTweaksV4Trailer()
+    {
+        var parsed = BoundedBlueprintReader.Read(CurrentGameBlueprintTweaksV4OneTeslaTower);
+        var obj = Assert.Single(parsed.Inspection.Objects);
+        Assert.Equal(2201, obj.ItemId);
+        Assert.Equal(44, obj.ModelIndex);
+        Assert.Equal(new byte[] { 4, 0, 0, 0, 0 },
+            parsed.Payload.Skip(parsed.Payload.Length - 5).ToArray());
+    }
+
     [Fact]
     public void ParsesCurrentLayoutWithoutExecutionOrPretendingNativeSignatureProof()
     {
@@ -103,6 +117,18 @@ public sealed class BoundedBlueprintReaderTests
     {
         Assert.Equal("blueprint_reform_unsupported", Reject(Code(Payload(1, reform: true))));
         Assert.Equal("blueprint_trailing_data", Reject(Code(Payload(1).Concat(new byte[] { 0 }).ToArray())));
+    }
+
+    [Fact]
+    public void RejectsUnknownOrMalformedBlueprintTweaksTrailer()
+    {
+        var payload = Payload(1);
+        var trailer = new byte[] { 4, 0, 0, 0, 0 };
+        for (var length = 1; length < trailer.Length; length++)
+            Assert.Equal("blueprint_trailing_data", Reject(Code(payload.Concat(trailer.Take(length)).ToArray())));
+        Assert.Equal("blueprint_trailing_data", Reject(Code(payload.Concat(new byte[] { 4, 0, 0, 0, 1 }).ToArray())));
+        Assert.Equal("blueprint_trailing_data", Reject(Code(payload.Concat(new byte[] { 4, 0, 1, 0, 0 }).ToArray())));
+        Assert.Equal("blueprint_trailing_data", Reject(Code(payload.Concat(trailer).Append((byte)0).ToArray())));
     }
 
     [Fact]
