@@ -455,7 +455,7 @@ internal sealed partial class NormalGameActionCoordinator
                 BridgeErrorCodes.StaleSession,
                 "Envelope and commit payload session IDs do not match.",
                 false,
-                "Use the exact current owned session ID in both locations."));
+                "Use the exact current authorized session ID in both locations."));
         }
 
         var fingerprint = CanonicalStateHash.Combine(
@@ -847,20 +847,18 @@ internal sealed partial class NormalGameActionCoordinator
     private void UpdateActionOnMainThread(ActionRecord action)
     {
         var isFlight = action.ActionKind == NormalActionKinds.InterplanetaryFlight;
-        if (!_sessions.IsCurrentSessionOwned
-            || !string.Equals(_sessions.SessionId, action.SessionId, StringComparison.Ordinal)
-            || (!isFlight && GameMain.localPlanet?.id != action.PlanetId))
+        if (!IsActiveActionSessionCurrent(action.SessionId, action.PlanetId, isFlight))
         {
             if (isFlight)
             {
-                Fail(action, "The owned session ended before the normal flight completed; its bound checkpoint requires recovery.");
+                Fail(action, "The exact session ended before the normal flight completed." + FlightFailureAdvice(action));
                 return;
             }
 
             action.State = NormalActionStates.ActionFailed;
             action.Terminal = true;
             action.CompletedAtGameTick = GameMain.gameTick;
-            action.Message = "The owned session or local planet ended before the normal game action completed.";
+            action.Message = "The exact session or local planet ended before the normal game action completed.";
             return;
         }
 
@@ -1286,95 +1284,6 @@ internal sealed partial class NormalGameActionCoordinator
         }
     }
 
-    private CommonPrepareResult ValidatePrepareCommon(string? requestedSessionId, int planetId, int stateHashVersion)
-    {
-        if (stateHashVersion != StateHashVersion)
-        {
-            return CommonPrepareResult.Failed(BridgeError.Create(
-                BridgeErrorCodes.StaleState,
-                "Unsupported action state-hash version.",
-                false,
-                "Inspect current state and use the returned stateHashVersion."));
-        }
-
-        var session = _sessions.CaptureOnMainThread();
-        if (!session.GameLoaded)
-        {
-            return CommonPrepareResult.Failed(BridgeError.Create(
-                BridgeErrorCodes.GameNotLoaded,
-                "No game is loaded.",
-                true,
-                "Create and wait for a fresh Spherewright-owned ordinary world."));
-        }
-
-        if (!session.OwnedBySpherewright)
-        {
-            return CommonPrepareResult.Failed(BridgeError.Create(
-                BridgeErrorCodes.SessionNotOwned,
-                "Normal-game actions are restricted to the exact world created by this Plugin process.",
-                false,
-                "Return to the main menu and create a fresh world through Spherewright."));
-        }
-
-        if (!string.Equals(requestedSessionId, session.SessionId, StringComparison.Ordinal))
-        {
-            return CommonPrepareResult.Failed(BridgeError.Create(
-                BridgeErrorCodes.StaleSession,
-                "The requested session is not the current owned session.",
-                false,
-                "Inspect current session state and retry with its exact session ID."));
-        }
-
-        if (planetId <= 0 || session.LocalPlanetId != planetId)
-        {
-            return CommonPrepareResult.Failed(BridgeError.Create(
-                BridgeErrorCodes.NoLocalPlanet,
-                "The requested planet is not the current local planet.",
-                false,
-                "Use the current localPlanetId returned by session state."));
-        }
-
-        return CommonPrepareResult.Succeeded(session);
-    }
-
-    private static BridgeError? ValidateCommitCommon(
-        SessionState session,
-        NormalActionPlanPayload plan,
-        CommitNormalActionRequest request)
-    {
-        if (!session.OwnedBySpherewright
-            || !string.Equals(session.SessionId, plan.SessionId, StringComparison.Ordinal)
-            || !string.Equals(request.SessionId, plan.SessionId, StringComparison.Ordinal))
-        {
-            return BridgeError.Create(
-                BridgeErrorCodes.StaleSession,
-                "The prepared action does not belong to the current owned session.",
-                false,
-                "Inspect the current session and prepare a fresh action.");
-        }
-
-        if (request.PlanetId != plan.PlanetId || session.LocalPlanetId != plan.PlanetId)
-        {
-            return BridgeError.Create(
-                BridgeErrorCodes.StaleState,
-                "Commit planet, planned planet, and current local planet do not match.",
-                false,
-                "Return to the planned planet and prepare a fresh action.");
-        }
-
-        if (session.WriteBlockers.Count > 0)
-        {
-            var blocker = session.WriteBlockers[0];
-            return BridgeError.Create(
-                blocker.Code,
-                blocker.Message,
-                false,
-                "Resolve every current session write blocker, then prepare a fresh action.");
-        }
-
-        return null;
-    }
-
     private GameCallResult<PreparedNormalAction> AddPreparedPlan(
         NormalActionPlanPayload payload,
         SessionState session,
@@ -1410,75 +1319,6 @@ internal sealed partial class NormalGameActionCoordinator
             CommitBlockers = session.WriteBlockers.Select(CloneBlocker).ToList(),
             CompletionCondition = completionCondition,
         });
-    }
-
-    private void Complete(ActionRecord action, string message)
-    {
-        if (action.ActionKind == NormalActionKinds.InterplanetaryFlight)
-        {
-            AbortPlayerOrderIfOwned(action);
-            ReleaseNativeAscentInput(action);
-            var lifecycleRejection = "The bound checkpoint identity is missing.";
-            if (string.IsNullOrWhiteSpace(action.FlightCheckpointId)
-                || !_flightCheckpoints.TryMarkFlightSucceeded(
-                    action.FlightCheckpointId!,
-                    action.ActionId,
-                    GameMain.gameTick,
-                    out lifecycleRejection))
-            {
-                action.State = NormalActionStates.OutcomeUnknown;
-                action.Terminal = true;
-                action.Succeeded = false;
-                action.CompletedAtGameTick = GameMain.gameTick;
-                action.Message = $"The physical flight completed, but its rollback checkpoint could not be sealed before the primary save: {lifecycleRejection}";
-                action.AfterInventory = CaptureInventory(GameMain.mainPlayer);
-                action.AfterStateHash ??= CaptureAfterStateHash(action);
-                _sessions.QuarantineWritesOnMainThread(action.ActionId, action.Message);
-                return;
-            }
-
-            _sessions.ForgetCurrentFlightCheckpoint(action.FlightCheckpointId!);
-        }
-
-        action.State = NormalActionStates.Completed;
-        action.Terminal = true;
-        action.Succeeded = true;
-        action.CompletedAtGameTick = GameMain.gameTick;
-        action.Message = message;
-        action.AfterInventory = CaptureInventory(GameMain.mainPlayer);
-        action.AfterStateHash = CaptureAfterStateHash(action);
-        _sessions.IncrementRevisionOnMainThread();
-    }
-
-    private void Fail(ActionRecord action, string message)
-    {
-        if (action.ActionKind == NormalActionKinds.InterplanetaryFlight)
-        {
-            AbortPlayerOrderIfOwned(action);
-            ReleaseNativeAscentInput(action);
-            if (!string.IsNullOrWhiteSpace(action.FlightCheckpointId))
-            {
-                action.RecoveryRequired = true;
-                if (!_flightCheckpoints.TryMarkRecoveryRequired(
-                        action.FlightCheckpointId!,
-                        action.ActionId,
-                        GameMain.gameTick,
-                        out var lifecycleRejection))
-                {
-                    message += $" Checkpoint lifecycle persistence also failed: {lifecycleRejection}";
-                }
-            }
-        }
-
-        action.State = action.RecoveryRequired
-            ? NormalActionStates.RecoveryRequired
-            : NormalActionStates.ActionFailed;
-        action.Terminal = true;
-        action.Succeeded = false;
-        action.CompletedAtGameTick = GameMain.gameTick;
-        action.Message = message;
-        action.AfterInventory = CaptureInventory(GameMain.mainPlayer);
-        action.AfterStateHash = CaptureAfterStateHash(action);
     }
 
     private string? CaptureAfterStateHash(ActionRecord action)
@@ -2208,7 +2048,7 @@ internal sealed partial class NormalGameActionCoordinator
             BridgeErrorCodes.BridgeNotReady,
             message,
             true,
-            "Wait for the owned world and player systems to finish loading, then retry."));
+            "Wait for the current authorized world and player systems to finish loading, then retry."));
 
     private static GameCallResult<T> MissingPlan<T>(bool expired) =>
         GameCallResult<T>.Failed(BridgeError.Create(
@@ -2216,23 +2056,6 @@ internal sealed partial class NormalGameActionCoordinator
             expired ? "The normal-game plan expired." : "The normal-game plan was not found or was already accepted.",
             true,
             "Inspect current state, prepare a fresh plan, and commit it once."));
-
-    private sealed class CommonPrepareResult
-    {
-        private CommonPrepareResult(SessionState? session, BridgeError? error)
-        {
-            Session = session;
-            Error = error;
-        }
-
-        public SessionState? Session { get; }
-
-        public BridgeError? Error { get; }
-
-        public static CommonPrepareResult Succeeded(SessionState session) => new CommonPrepareResult(session, null);
-
-        public static CommonPrepareResult Failed(BridgeError error) => new CommonPrepareResult(null, error);
-    }
 
     private sealed class ActionRecord
     {

@@ -16,6 +16,7 @@ internal sealed class UserSaveImportCoordinator
     private readonly bool _enabled;
     private readonly bool _writesConfigured;
     private readonly GameSessionTracker _sessions;
+    private readonly Func<bool> _hasActiveNormalActionsOnMainThread;
     private readonly PreparedPlanStore<UserSaveImportPlanPayload> _plans;
     private readonly IdempotencyCache<UserSaveImportResult> _idempotency;
     private readonly Dictionary<string, ActionResultSnapshot> _actions =
@@ -27,11 +28,14 @@ internal sealed class UserSaveImportCoordinator
         int planLifetimeSeconds,
         int idempotencyRetentionMinutes,
         int idempotencyCapacity,
-        GameSessionTracker sessions)
+        GameSessionTracker sessions,
+        Func<bool> hasActiveNormalActionsOnMainThread)
     {
         _enabled = enabled;
         _writesConfigured = writesConfigured;
         _sessions = sessions;
+        _hasActiveNormalActionsOnMainThread = hasActiveNormalActionsOnMainThread
+            ?? throw new ArgumentNullException(nameof(hasActiveNormalActionsOnMainThread));
         _plans = new PreparedPlanStore<UserSaveImportPlanPayload>(
             TimeSpan.FromSeconds(planLifetimeSeconds),
             8);
@@ -61,6 +65,10 @@ internal sealed class UserSaveImportCoordinator
                 false,
                 "Enable writes and restart DSP before preparing an import."));
         }
+
+        var activeActionError = ValidateNoActiveNormalActionsOnMainThread();
+        if (activeActionError is not null)
+            return GameCallResult<PreparedUserSaveImportPlan>.Failed(activeActionError);
 
         if (!_sessions.TryGetCurrentUnownedImportCandidateOnMainThread(
                 requestedSessionId,
@@ -251,6 +259,15 @@ internal sealed class UserSaveImportCoordinator
                 ConfirmationPrompt));
         }
 
+        // Final main-thread revalidation precedes token consumption, admission and
+        // native saving. No work item yields between this guard and the mutation.
+        var readinessError = ValidateConfirmedWorldOnMainThread(
+            preparedPlan.Payload.SessionId,
+            preparedPlan.Payload.Revision,
+            preparedPlan.Payload.Data);
+        if (readinessError is not null)
+            return GameCallResult<UserSaveImportResult>.Failed(readinessError);
+
         if (!_plans.TryTake(request.PlanToken, out var plan, out var expired) || plan is null)
         {
             return GameCallResult<UserSaveImportResult>.Failed(BridgeError.Create(
@@ -261,14 +278,6 @@ internal sealed class UserSaveImportCoordinator
         }
 
         var payload = plan.Payload;
-        var readinessError = ValidateConfirmedWorldOnMainThread(
-            payload.SessionId,
-            payload.Revision,
-            payload.Data);
-        if (readinessError is not null)
-        {
-            return GameCallResult<UserSaveImportResult>.Failed(readinessError);
-        }
 
         var planetId = payload.Data.localPlanet!.id;
         var actionId = Guid.NewGuid().ToString("D");
@@ -351,6 +360,9 @@ internal sealed class UserSaveImportCoordinator
         long revision,
         GameData expectedData)
     {
+        var activeActionError = ValidateNoActiveNormalActionsOnMainThread();
+        if (activeActionError is not null) return activeActionError;
+
         if (!_sessions.TryGetCurrentUnownedImportCandidateOnMainThread(sessionId, out var currentData, out var rejection)
             || currentData is null
             || !ReferenceEquals(currentData, expectedData))
@@ -408,6 +420,14 @@ internal sealed class UserSaveImportCoordinator
 
         return null;
     }
+
+    private BridgeError? ValidateNoActiveNormalActionsOnMainThread() =>
+        _hasActiveNormalActionsOnMainThread()
+            ? BridgeError.Create(BridgeErrorCodes.ServerBusy,
+                "Save import cannot overlap a non-terminal normal action.",
+                true,
+                "Wait for every normal action to become terminal, then prepare and confirm the import again. The active action was not changed.")
+            : null;
 
     private static UserSaveImportResult CloneAsReplay(UserSaveImportResult result, bool replay = true) =>
         new UserSaveImportResult

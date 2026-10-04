@@ -6,16 +6,18 @@ internal sealed class ResearchResultAutoAcknowledger
 {
     private readonly bool _enabled;
     private readonly ManualLogSource _logger;
+    private readonly GameSessionTracker _sessions;
 
-    public ResearchResultAutoAcknowledger(bool enabled, ManualLogSource logger)
+    public ResearchResultAutoAcknowledger(bool enabled, ManualLogSource logger, GameSessionTracker sessions)
     {
         _enabled = enabled;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _sessions = sessions ?? throw new ArgumentNullException(nameof(sessions));
     }
 
     public void UpdateOnMainThread()
     {
-        if (!_enabled)
+        if (!_enabled || _sessions.IsCurrentSessionObservedUnowned)
         {
             return;
         }

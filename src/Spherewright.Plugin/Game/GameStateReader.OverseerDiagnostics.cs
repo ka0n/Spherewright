@@ -11,7 +11,7 @@ internal sealed partial class GameStateReader
 {
     private static BridgeError? TryCaptureOverseerDiagnosticLogisticsRoutes(
         IReadOnlyList<PlanetFactory> factories,
-        OverseerLogisticsProgressStore progressStore,
+        OverseerLogisticsProgressStore? progressStore,
         ref long componentScanCount,
         ref long sourceReferenceScanCount,
         out OverseerDiagnosticLogisticsIndex? index)
@@ -1566,7 +1566,7 @@ internal sealed partial class GameStateReader
 
     private sealed class OverseerDiagnosticLogisticsIndex
     {
-        private readonly OverseerLogisticsProgressStore _progressStore;
+        private readonly OverseerLogisticsProgressStore? _progressStore;
         private readonly long _capturedAtGameTick;
         private readonly DateTimeOffset _capturedAtUtc;
         private readonly Dictionary<string, OverseerDiagnosticLogisticsEndpoint> _outputBelts =
@@ -1575,7 +1575,7 @@ internal sealed partial class GameStateReader
             new Dictionary<string, OverseerDiagnosticLogisticsObservation>(StringComparer.Ordinal);
 
         public OverseerDiagnosticLogisticsIndex(
-            OverseerLogisticsProgressStore progressStore,
+            OverseerLogisticsProgressStore? progressStore,
             long capturedAtGameTick,
             DateTimeOffset capturedAtUtc)
         {
@@ -1708,7 +1708,9 @@ internal sealed partial class GameStateReader
 
         public void FinalizeProgressEvidence()
         {
-            if (_progressObservations.Count == 0)
+            // Observed unowned worlds use only the current native snapshot;
+            // never attach, read or update protected per-save progress evidence.
+            if (_progressStore is null || _progressObservations.Count == 0)
             {
                 return;
             }

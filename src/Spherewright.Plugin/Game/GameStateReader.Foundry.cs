@@ -40,7 +40,7 @@ internal sealed partial class GameStateReader
             if (request.Site is not null)
             {
                 FoundrySitePlanner.ValidateRequest(request.Site);
-                var accessError = ValidateOwnedPlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
+                var accessError = ValidateBlueprintActionPlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
                 if (accessError is not null) return GameCallResult<FoundryPlanSnapshot>.Failed(accessError);
                 var playerResult = GetPlayerStateOnMainThread(requestedSessionId, new LocalPlanetRequest { PlanetId = request.PlanetId });
                 if (!playerResult.Success || playerResult.Value is null)

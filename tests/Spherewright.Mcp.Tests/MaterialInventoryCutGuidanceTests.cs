@@ -11,6 +11,20 @@ namespace Spherewright.Mcp.Tests;
 public sealed class MaterialInventoryCutGuidanceTests
 {
     [Fact]
+    public void PublicCutDescriptionKeepsReadAndWriteAuthorityIndependent()
+    {
+        var method = typeof(SpherewrightTools).GetMethod(nameof(SpherewrightTools.InspectFactoryEntityAsync))!;
+        var description = method.GetCustomAttribute<DescriptionAttribute>()!.Description;
+        Assert.Contains("same public rich-read policy", description);
+        Assert.Contains("exact observed_unowned", description);
+        Assert.Contains("Safety.AllowUnownedRichReads=true", description);
+        Assert.Contains("Safety.AllowUnownedNormalWrites alone never grants public reads", description);
+        Assert.Contains("current readable local factory", method.GetParameters()
+            .Single(item => item.Name == "materialInventoryObjectIds")
+            .GetCustomAttribute<DescriptionAttribute>()!.Description);
+    }
+
+    [Fact]
     public async Task ExistingReadForwardsExplicitCutOnceAndKeepsDefaultEmpty()
     {
         var client = DispatchProxy.Create<IBridgeClient, InventoryBridgeProxy>();

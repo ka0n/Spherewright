@@ -84,21 +84,21 @@ internal sealed class SpherewrightBridgeHost : IDisposable
             gameVersion,
             resumeTickets,
             flightCheckpoints,
-            logger);
-        var userSaveImportCoordinator = new UserSaveImportCoordinator(
-            configuration.AllowUserSaveImport,
-            configuration.AllowWrites,
-            configuration.PlanTokenLifetimeSeconds,
-            configuration.IdempotencyRetentionMinutes,
-            configuration.MaxIdempotencyEntriesPerSession,
-            sessionTracker);
+            logger,
+            configuration.AllowUnownedRichReads,
+            configuration.AllowUnownedNormalWrites);
         var overseerLogisticsProgressStore = new OverseerLogisticsProgressStore(
             configuration.RuntimeDescriptorDirectory,
             gameVersion,
             sessionTracker,
             logger);
-        var gameStateReader = new GameStateReader(sessionTracker, overseerLogisticsProgressStore,
-            new GovernorDeclarationStore(configuration.RuntimeDescriptorDirectory, gameVersion, sessionTracker, logger));
+        var governorDeclarationStore = new GovernorDeclarationStore(configuration.RuntimeDescriptorDirectory, gameVersion, sessionTracker, logger);
+        var gameStateReader = new GameStateReader(sessionTracker, overseerLogisticsProgressStore, governorDeclarationStore);
+        var normalActionGameStateReader = new GameStateReader(
+            sessionTracker,
+            overseerLogisticsProgressStore,
+            governorDeclarationStore,
+            allowAuthorizedUnownedNormalActionReads: true);
         var gameplayJournalManager = new GameplayJournalManager(
             configuration.RuntimeDescriptorDirectory,
             gameVersion,
@@ -111,12 +111,21 @@ internal sealed class SpherewrightBridgeHost : IDisposable
             configuration.IdempotencyRetentionMinutes,
             configuration.MaxIdempotencyEntriesPerSession,
             sessionTracker,
-            gameStateReader,
+            normalActionGameStateReader,
             flightCheckpoints,
             new BlueprintBuildStore(configuration.RuntimeDescriptorDirectory, gameVersion, sessionTracker, logger));
+        var userSaveImportCoordinator = new UserSaveImportCoordinator(
+            configuration.AllowUserSaveImport,
+            configuration.AllowWrites,
+            configuration.PlanTokenLifetimeSeconds,
+            configuration.IdempotencyRetentionMinutes,
+            configuration.MaxIdempotencyEntriesPerSession,
+            sessionTracker,
+            normalActionCoordinator.HasActiveActionsOnMainThread);
         var researchResultAutoAcknowledger = new ResearchResultAutoAcknowledger(
             configuration.AutoAcknowledgeResearchResults,
-            logger);
+            logger,
+            sessionTracker);
         var testWorldCoordinator = new TestWorldCoordinator(
             configuration.AllowWrites,
             configuration.PlanTokenLifetimeSeconds,

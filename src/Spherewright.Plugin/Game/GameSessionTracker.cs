@@ -6,10 +6,12 @@ using Spherewright.Plugin.RuntimeDescriptor;
 
 namespace Spherewright.Plugin.Game;
 
-internal sealed class GameSessionTracker : IDisposable
+internal sealed partial class GameSessionTracker : IDisposable
 {
     private readonly bool _writesConfigured;
     private readonly bool _userSaveImportConfigured;
+    private readonly bool _unownedRichReadsConfigured;
+    private readonly bool _unownedNormalWritesConfigured;
     private readonly string _gameVersion;
     private readonly ManualLogSource _logger;
     private readonly OwnedWorldResumeTicketStore _resumeTickets;
@@ -46,10 +48,14 @@ internal sealed class GameSessionTracker : IDisposable
         string gameVersion,
         OwnedWorldResumeTicketStore resumeTickets,
         FlightCheckpointStore flightCheckpoints,
-        ManualLogSource logger)
+        ManualLogSource logger,
+        bool unownedRichReadsConfigured = false,
+        bool unownedNormalWritesConfigured = false)
     {
         _writesConfigured = writesConfigured;
         _userSaveImportConfigured = userSaveImportConfigured;
+        _unownedRichReadsConfigured = unownedRichReadsConfigured;
+        _unownedNormalWritesConfigured = unownedNormalWritesConfigured;
         _gameVersion = gameVersion;
         _resumeTickets = resumeTickets;
         _flightCheckpoints = flightCheckpoints;
@@ -261,7 +267,7 @@ internal sealed class GameSessionTracker : IDisposable
                 _currentFlightCheckpointId = null;
                 _currentSessionLoadedFromFlightCheckpoint = false;
                 CurrentOwnedSessionStartedAsNewGame = false;
-                _logger.LogWarning("Spherewright detected an unowned game session; save and factory reads are blocked");
+                _logger.LogWarning("Spherewright detected an unowned game session; rich reads and normal writes require their independent opt-ins");
             }
         }
 
@@ -336,19 +342,11 @@ internal sealed class GameSessionTracker : IDisposable
                 : "Spherewright adopted the exact normally saved owned world and is validating its protected gameplay-journal checkpoint");
         }
 
-        if (!IsCurrentSessionOwned)
+        UpdateNormalActionPlanetOnMainThread(currentData);
+        if (IsCurrentSessionOwned)
         {
-            return;
+            TrySaveOwnedWorldOnMainThread(currentData);
         }
-
-        var localPlanetId = currentData.localPlanet?.id ?? 0;
-        if (_lastPlanetId != 0 && localPlanetId != _lastPlanetId)
-        {
-            _revision++;
-        }
-
-        _lastPlanetId = localPlanetId;
-        TrySaveOwnedWorldOnMainThread(currentData);
     }
 
     public void ConfirmResumeGameplayJournalContinuityOnMainThread(
@@ -425,24 +423,7 @@ internal sealed class GameSessionTracker : IDisposable
 
         if (!IsCurrentSessionOwned)
         {
-            return new SessionState
-            {
-                BridgeConnected = true,
-                GameLoaded = true,
-                OwnedBySpherewright = false,
-                AccessRestricted = true,
-                GameVersion = _gameVersion,
-                SessionId = _sessionId,
-                Revision = _revision,
-                PeacefulMode = PeacefulModeStates.Unknown,
-                SandboxMode = SandboxModeStates.Unknown,
-                WritesAllowed = false,
-                WriteHealth = _writeHealth,
-                WriteQuarantineActionId = _writeQuarantineActionId,
-                OwnedSaveState = OwnedSaveStates.None,
-                UserSaveImportConfigured = _userSaveImportConfigured,
-                Capabilities = CreateUnownedCapabilities(),
-            };
+            return CaptureUnownedStateOnMainThread();
         }
 
         var descriptor = _observedData.gameDesc;
@@ -466,6 +447,7 @@ internal sealed class GameSessionTracker : IDisposable
             GameLoaded = true,
             OwnedBySpherewright = true,
             AccessRestricted = false,
+            ReadAccessMode = ReadAccessModes.Owned,
             GameVersion = _gameVersion,
             SessionId = _sessionId,
             SaveName = _ownedSaveName,
@@ -476,6 +458,7 @@ internal sealed class GameSessionTracker : IDisposable
             PeacefulMode = peacefulState,
             SandboxMode = sandboxState,
             ResourceMultiplier = descriptor?.resourceMultiplier,
+            DarkFogAggressiveness = CaptureDarkFogAggressivenessOnMainThread(),
             WritesAllowed = writesAllowed,
             WriteHealth = _writeHealth,
             WriteQuarantineActionId = _writeQuarantineActionId,
@@ -504,63 +487,6 @@ internal sealed class GameSessionTracker : IDisposable
         return capabilities;
     }
 
-    private List<string> CreateUnownedCapabilities()
-    {
-        var capabilities = new List<string> { "bridge.status", "session.safe-status" };
-        if (_userSaveImportConfigured
-            && string.Equals(_writeHealth, WriteHealthStates.Healthy, StringComparison.Ordinal))
-        {
-            capabilities.Add("user-save.import.prepare");
-        }
-
-        return capabilities;
-    }
-
-    public bool TryGetCurrentUnownedImportCandidateOnMainThread(
-        string? requestedSessionId,
-        out GameData? data,
-        out string rejection)
-    {
-        UpdateOnMainThread();
-        data = null;
-        rejection = string.Empty;
-        if (!GameLoaded || _observedData is null || GameMain.data is null)
-        {
-            rejection = "No ordinary game is loaded.";
-            return false;
-        }
-
-        if (IsCurrentSessionOwned)
-        {
-            rejection = "The current world is already Spherewright-owned.";
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(requestedSessionId)
-            || !string.Equals(requestedSessionId, _sessionId, StringComparison.Ordinal))
-        {
-            rejection = "The requested unowned session is stale.";
-            return false;
-        }
-
-        if (_expectedOwnedSaveName is not null
-            || _expectedResumeTicket is not null
-            || _expectedFlightCheckpoint is not null)
-        {
-            rejection = "Another protected world-adoption flow is active.";
-            return false;
-        }
-
-        if (!ReferenceEquals(_observedData, GameMain.data))
-        {
-            rejection = "The current world identity changed.";
-            return false;
-        }
-
-        data = _observedData;
-        return true;
-    }
-
     private void ApplyFlightCheckpointState(SessionState state)
     {
         var ticket = _flightCheckpoints.CurrentTicket;
@@ -580,14 +506,6 @@ internal sealed class GameSessionTracker : IDisposable
         if (!state.Capabilities.Contains("flight-checkpoint.reload"))
         {
             state.Capabilities.Add("flight-checkpoint.reload");
-        }
-    }
-
-    public void IncrementRevisionOnMainThread()
-    {
-        if (IsCurrentSessionOwned)
-        {
-            _revision++;
         }
     }
 
@@ -892,40 +810,6 @@ internal sealed class GameSessionTracker : IDisposable
         }
     }
 
-    public void QuarantineWritesOnMainThread(string actionId, string reason)
-    {
-        if (!IsCurrentSessionOwned || string.Equals(_writeHealth, WriteHealthStates.Quarantined, StringComparison.Ordinal))
-        {
-            return;
-        }
-
-        _writeHealth = WriteHealthStates.Quarantined;
-        _writeQuarantineActionId = string.IsNullOrWhiteSpace(actionId) ? null : actionId;
-        _writeQuarantineReason = string.IsNullOrWhiteSpace(reason) ? "A write outcome could not be proven." : reason;
-        _revision++;
-        try
-        {
-            if (!string.IsNullOrWhiteSpace(_ownedSaveName)
-                && !string.IsNullOrWhiteSpace(_sessionId)
-                && _lastPlanetId > 0
-                && !string.IsNullOrWhiteSpace(_writeQuarantineActionId))
-            {
-                _resumeTickets.ArmFromQuarantinedOwnedSession(
-                    _ownedSaveName!,
-                    _sessionId!,
-                    _lastPlanetId,
-                    GameMain.gameTick,
-                    _writeQuarantineActionId!,
-                    CaptureGameplayJournalCheckpointOnMainThread());
-            }
-        }
-        catch (Exception exception)
-        {
-            _logger.LogWarning($"Spherewright could not arm restart-resume after quarantine ({exception.GetType().Name})");
-        }
-        _logger.LogError("Spherewright quarantined writes for the current owned session");
-    }
-
     public void ExpectNextSessionToBeResumed(OwnedWorldResumeTicket ticket, OwnedSaveRecoveryLease? sourceLease = null,
         bool reauthorizingExpiredPrimary = false, IDisposable? journalLease = null,
         bool reauthorizingFixedAutosave0 = false, OwnedSaveRecoveryLease? primaryLease = null)
@@ -1096,40 +980,6 @@ internal sealed class GameSessionTracker : IDisposable
         }
     }
 
-    public bool TryClearQuarantineOnMainThread(
-        string expectedActionId,
-        string expectedReason,
-        out string? rejection)
-    {
-        rejection = null;
-        if (!IsCurrentSessionOwned
-            || !string.Equals(_writeHealth, WriteHealthStates.Quarantined, StringComparison.Ordinal))
-        {
-            rejection = "The current owned session is not quarantined.";
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(_writeQuarantineActionId)
-            || !string.Equals(_writeQuarantineActionId, expectedActionId, StringComparison.Ordinal)
-            || !string.Equals(_writeQuarantineReason, expectedReason, StringComparison.Ordinal))
-        {
-            rejection = "The quarantined action identity or reason changed after reconciliation was prepared.";
-            return false;
-        }
-
-        var resumeToken = _resumeTickets.CurrentResumeToken;
-        _writeHealth = WriteHealthStates.Healthy;
-        _writeQuarantineActionId = null;
-        _writeQuarantineReason = null;
-        _revision++;
-        if (!string.IsNullOrWhiteSpace(resumeToken))
-        {
-            _resumeTickets.Consume(resumeToken!);
-        }
-        _logger.LogInfo("Spherewright cleared write quarantine after exact action reconciliation");
-        return true;
-    }
-
     private static bool TryValidateFlightCheckpointCandidate(
         GameData currentData,
         FlightCheckpointTicket ticket,
@@ -1259,54 +1109,6 @@ internal sealed class GameSessionTracker : IDisposable
         }
 
         return true;
-    }
-
-    private List<WriteBlocker> CreateWriteBlockers(string peacefulState)
-    {
-        var blockers = new List<WriteBlocker>();
-        if (string.Equals(_writeHealth, WriteHealthStates.Quarantined, StringComparison.Ordinal))
-        {
-            blockers.Add(new WriteBlocker
-            {
-                Code = BridgeErrorCodes.WriteSubsystemQuarantined,
-                Message = _writeQuarantineReason ?? "The current session write subsystem is quarantined.",
-            });
-        }
-        if (_pendingJournalResumeTicket is not null)
-        {
-            blockers.Add(new WriteBlocker
-            {
-                Code = BridgeErrorCodes.BridgeNotReady,
-                Message = "Writes are blocked until the protected gameplay journal proves the resume ticket's durable checkpoint.",
-            });
-        }
-        if (!_writesConfigured)
-        {
-            blockers.Add(new WriteBlocker
-            {
-                Code = BridgeErrorCodes.WritesDisabled,
-                Message = "Writes are disabled by configuration.",
-            });
-        }
-
-        if (string.Equals(peacefulState, PeacefulModeStates.Unknown, StringComparison.Ordinal))
-        {
-            blockers.Add(new WriteBlocker
-            {
-                Code = BridgeErrorCodes.PeacefulModeUnknown,
-                Message = "Peaceful mode could not be confirmed.",
-            });
-        }
-        else if (!string.Equals(peacefulState, PeacefulModeStates.ConfirmedPeaceful, StringComparison.Ordinal))
-        {
-            blockers.Add(new WriteBlocker
-            {
-                Code = BridgeErrorCodes.PeacefulModeRequired,
-                Message = "M0 writes require a peaceful world.",
-            });
-        }
-
-        return blockers;
     }
 
     private OwnedWorldGameplayJournalCheckpoint CaptureGameplayJournalCheckpointOnMainThread()

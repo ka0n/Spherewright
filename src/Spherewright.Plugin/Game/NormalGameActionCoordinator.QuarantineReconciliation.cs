@@ -35,7 +35,7 @@ internal sealed partial class NormalGameActionCoordinator
                 BridgeErrorCodes.WriteSubsystemQuarantined,
                 "The requested action is not the exact action currently responsible for write quarantine.",
                 false,
-                "Use writeQuarantineActionId from the current owned-session state."));
+                "Use writeQuarantineActionId from the current authorized session state."));
         }
 
         if (!_actions.TryGetValue(request.ActionId, out var action)
@@ -49,7 +49,9 @@ internal sealed partial class NormalGameActionCoordinator
                 BridgeErrorCodes.ActionOutcomeUnknown,
                 "Only the retained, exact outcome-unknown build action that caused this quarantine can be reconciled.",
                 false,
-                "Keep the session running and inspect the writeQuarantineActionId action; restart-resume is required if its proof record is unavailable."));
+                session.OwnedBySpherewright
+                    ? "Keep the session running and inspect the writeQuarantineActionId action; restart-resume is required if its proof record is unavailable."
+                    : "Keep this exact unowned session running and inspect its retained action; no restart recovery is available for unowned quarantine."));
         }
 
         if (!TryProveQuarantinedBuild(action, out var resolvedEntityIds, out var proofHash, out var rejection))
@@ -123,7 +125,7 @@ internal sealed partial class NormalGameActionCoordinator
                 BridgeErrorCodes.StaleSession,
                 "Envelope and commit payload session IDs do not match.",
                 false,
-                "Use the exact current owned session ID in both locations."));
+                "Use the exact current authorized session ID in both locations."));
         }
 
         var fingerprint = CanonicalStateHash.Combine(
@@ -156,7 +158,7 @@ internal sealed partial class NormalGameActionCoordinator
                 BridgeErrorCodes.IdempotencyCapacityExceeded,
                 "The Plugin idempotency cache has no capacity for another reconciliation result.",
                 false,
-                "Restart and resume the exact owned world before attempting another reconciliation; quarantine was not changed."));
+                "Retain the exact action evidence and leave writes quarantined; no reconciliation was accepted."));
         }
 
         if (!_plans.TryGet(request.PlanToken, out var prepared, out var expired) || prepared is null)
@@ -243,15 +245,15 @@ internal sealed partial class NormalGameActionCoordinator
         NormalActionPlanPayload plan,
         CommitNormalActionRequest request)
     {
-        if (!session.OwnedBySpherewright
+        if (!session.GameLoaded || !_sessions.IsCurrentSessionAuthorizedForNormalActions
             || !string.Equals(session.SessionId, plan.SessionId, StringComparison.Ordinal)
             || !string.Equals(request.SessionId, plan.SessionId, StringComparison.Ordinal))
         {
             return BridgeError.Create(
                 BridgeErrorCodes.StaleSession,
-                "The reconciliation plan does not belong to the current owned session.",
+                "The reconciliation plan does not belong to the current authorized session.",
                 false,
-                "Inspect the current owned session and its quarantine action again.");
+                "Inspect the current authorized session and its quarantine action again.");
         }
 
         if (request.PlanetId != plan.PlanetId || session.LocalPlanetId != plan.PlanetId)

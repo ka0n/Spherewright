@@ -77,7 +77,7 @@ internal sealed partial class NormalGameActionCoordinator
                 BridgeErrorCodes.ActionRejected,
                 "Interplanetary flight must start alive and grounded on the inspected origin planet.",
                 true,
-                "Land and stop on the current owned planet, then inspect the player and prepare again."));
+                "Land and stop on the current planet, then inspect the player and prepare again."));
         }
 
         if (player.currentOrder is not null)
@@ -153,7 +153,8 @@ internal sealed partial class NormalGameActionCoordinator
             playerActionHash,
             starSnapshot.StateHash,
             request.MinimumCoreEnergyRatio,
-            requiredEnergy);
+            requiredEnergy,
+            common.Session!.OwnedBySpherewright);
         var estimatedTicks = Math.Max(
             7200L,
             (long)Math.Ceiling(distance / Math.Max(300d, player.mecha.maxSailSpeed) * 60d) + 7200L);
@@ -167,6 +168,7 @@ internal sealed partial class NormalGameActionCoordinator
             distance,
             request.MinimumCoreEnergyRatio,
             requiredEnergy);
+        payload.FlightRequiresCheckpoint = common.Session!.OwnedBySpherewright;
         return AddPreparedPlan(
             payload,
             common.Session!,
@@ -176,6 +178,8 @@ internal sealed partial class NormalGameActionCoordinator
 
     private BridgeError? RevalidateInterplanetaryFlightPlanOnMainThread(NormalActionPlanPayload plan)
     {
+        if (!FlightAuthorityMatches(plan, _sessions.CaptureOnMainThread()))
+            return Stale("Flight session or checkpoint authority changed after prepare.");
         var playerResult = _reader.GetPlayerStateOnMainThread(
             plan.SessionId,
             new LocalPlanetRequest { PlanetId = plan.PlanetId });
@@ -225,20 +229,7 @@ internal sealed partial class NormalGameActionCoordinator
 
     private void StartInterplanetaryFlightOnMainThread(ActionRecord action)
     {
-        if (!EnsureFlightCheckpointOnMainThread(action))
-        {
-            return;
-        }
-
-        if (!_flightCheckpoints.TryMarkAttemptStarted(
-                action.FlightCheckpointId!,
-                action.ActionId,
-                GameMain.gameTick,
-                out var lifecycleRejection))
-        {
-            Fail(action, $"Native launch was not started because its checkpoint lifecycle could not be armed: {lifecycleRejection}");
-            return;
-        }
+        if (!BeginFlightCheckpointLifecycle(action)) return;
 
         var player = GameMain.mainPlayer;
         action.FlightBestDistance = action.Plan.EstimatedDistance;
@@ -252,7 +243,9 @@ internal sealed partial class NormalGameActionCoordinator
         player.controller.actionBuild.blueprintMode = EBlueprintMode.None;
         EnterNativeFlight(player);
         action.State = NormalActionStates.WaitingForGame;
-        action.Message = $"A separate pre-flight checkpoint was confirmed at tick {action.FlightCheckpointGameTick}; DSP then accepted native launch toward planet {action.Plan.DestinationPlanetId}.";
+        action.Message = action.Plan.FlightRequiresCheckpoint
+            ? $"A separate pre-flight checkpoint was confirmed at tick {action.FlightCheckpointGameTick}; DSP then accepted native launch toward planet {action.Plan.DestinationPlanetId}."
+            : $"DSP accepted native launch toward planet {action.Plan.DestinationPlanetId} in the current manual session without a rollback checkpoint.";
     }
 
     private bool EnsureFlightCheckpointOnMainThread(ActionRecord action)
@@ -350,7 +343,7 @@ internal sealed partial class NormalGameActionCoordinator
 
             if (GameMain.gameTick > action.FlightDestinationContactAtGameTick + FlightLandingTimeoutTicks)
             {
-                Fail(action, $"Native landing on planet {destination.id} did not remain grounded within the bounded settling window; reload the bound pre-flight checkpoint before retrying.");
+                Fail(action, $"Native landing on planet {destination.id} did not remain grounded within the bounded settling window.{FlightFailureAdvice(action)}");
                 return;
             }
 
@@ -422,13 +415,13 @@ internal sealed partial class NormalGameActionCoordinator
                 && localPlanet.id != action.PlanetId
                 && localPlanet.id != destination.id)
             {
-                Fail(action, $"Native flight landed on unexpected planet {localPlanet.id}; reload the bound pre-flight checkpoint before retrying.");
+                Fail(action, $"Native flight landed on unexpected planet {localPlanet.id}.{FlightFailureAdvice(action)}");
                 return;
             }
 
             if (GameMain.gameTick > action.StartedAtGameTick + FlightLaunchTimeoutTicks)
             {
-                Fail(action, "DSP did not enter native flight mode within the bounded launch window; the bound pre-flight checkpoint remains reusable.");
+                Fail(action, $"DSP did not enter native flight mode within the bounded launch window.{FlightFailureAdvice(action)}");
                 return;
             }
 
@@ -449,7 +442,7 @@ internal sealed partial class NormalGameActionCoordinator
             {
                 if (GameMain.gameTick > action.StartedAtGameTick + FlightLaunchTimeoutTicks)
                 {
-                    Fail(action, "DSP did not enter native sail mode within the bounded launch window; the bound pre-flight checkpoint remains reusable.");
+                    Fail(action, $"DSP did not enter native sail mode within the bounded launch window.{FlightFailureAdvice(action)}");
                     return;
                 }
 
@@ -573,7 +566,7 @@ internal sealed partial class NormalGameActionCoordinator
         if (GameMain.gameTick > action.StartedAtGameTick + timeout)
         {
             action.Stalled = true;
-            Fail(action, $"Native sail exceeded its bounded timeout at {surfaceDistance:F0} m from planet {destination.id}; the bound checkpoint must be reloaded before another attempt.");
+            Fail(action, $"Native sail exceeded its bounded timeout at {surfaceDistance:F0} m from planet {destination.id}.{FlightFailureAdvice(action)}");
             return;
         }
 
@@ -582,7 +575,7 @@ internal sealed partial class NormalGameActionCoordinator
             && GameMain.gameTick > action.FlightBestDistanceAtGameTick + progressStallWindow)
         {
             action.Stalled = true;
-            Fail(action, $"Native sail made no new best-distance progress for {progressStallWindow} game ticks while {surfaceDistance:F0} m from planet {destination.id}; the bound checkpoint must be reloaded before another attempt.");
+            Fail(action, $"Native sail made no new best-distance progress for {progressStallWindow} game ticks while {surfaceDistance:F0} m from planet {destination.id}.{FlightFailureAdvice(action)}");
         }
     }
 
@@ -633,7 +626,7 @@ internal sealed partial class NormalGameActionCoordinator
                 {
                     AbortPlayerOrderIfOwned(action);
                     Fail(action,
-                        $"Native Drift shore recovery stopped because its exact owned movement order made no safe physical progress for {progress.StalledGameTicks} game ticks; reload the bound pre-flight checkpoint before retrying.");
+                        $"Native Drift shore recovery stopped because its exact owned movement order made no safe physical progress for {progress.StalledGameTicks} game ticks.{FlightFailureAdvice(action)}");
                     return;
                 }
 
@@ -647,13 +640,13 @@ internal sealed partial class NormalGameActionCoordinator
 
             if (player.currentOrder is not null)
             {
-                Fail(action, "A different player order replaced the exact owned Drift shore-recovery order; the bound pre-flight checkpoint must be reloaded before retrying.");
+                Fail(action, $"A different player order replaced the exact owned Drift shore-recovery order.{FlightFailureAdvice(action)}");
                 return;
             }
 
             if (!action.PlayerOrder.targetReached)
             {
-                Fail(action, "DSP cleared the exact owned Drift shore-recovery order before it reached the selected terrain; the bound pre-flight checkpoint must be reloaded before retrying.");
+                Fail(action, $"DSP cleared the exact owned Drift shore-recovery order before it reached the selected terrain.{FlightFailureAdvice(action)}");
                 return;
             }
 
@@ -675,13 +668,13 @@ internal sealed partial class NormalGameActionCoordinator
 
         if (action.FlightLandingOrderCount >= FlightShoreMaximumOrders)
         {
-            Fail(action, $"DSP remained in Drift after {FlightShoreMaximumOrders} bounded dry-terrain movement orders; reload the bound pre-flight checkpoint before retrying.");
+            Fail(action, $"DSP remained in Drift after {FlightShoreMaximumOrders} bounded dry-terrain movement orders.{FlightFailureAdvice(action)}");
             return;
         }
 
         if (player.currentOrder is not null)
         {
-            Fail(action, "A player order appeared before Drift shore recovery could claim the native movement channel; the bound pre-flight checkpoint must be reloaded before retrying.");
+            Fail(action, $"A player order appeared before Drift shore recovery could claim the native movement channel.{FlightFailureAdvice(action)}");
             return;
         }
 
@@ -697,13 +690,13 @@ internal sealed partial class NormalGameActionCoordinator
                     out targetDistance,
                     out terrainClearance))
             {
-                Fail(action, $"No terrain with a verified dry neighborhood was found within {FlightShoreSearchMaximumDistance:F0} m of the ocean contact point on planet {destination.id}; reload the bound pre-flight checkpoint before retrying.");
+                Fail(action, $"No terrain with a verified dry neighborhood was found within {FlightShoreSearchMaximumDistance:F0} m of the ocean contact point on planet {destination.id}.{FlightFailureAdvice(action)}");
                 return;
             }
         }
         catch (Exception exception)
         {
-            Fail(action, $"The current-version terrain query failed safely with {exception.GetType().Name} before a Drift shore-recovery order was issued; reload the bound pre-flight checkpoint before retrying.");
+            Fail(action, $"The current-version terrain query failed safely with {exception.GetType().Name} before a Drift shore-recovery order was issued.{FlightFailureAdvice(action)}");
             return;
         }
 

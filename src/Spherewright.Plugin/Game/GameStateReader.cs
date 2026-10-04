@@ -45,6 +45,7 @@ internal sealed partial class GameStateReader
     private readonly GameSessionTracker _sessions;
     private readonly OverseerLogisticsProgressStore _overseerLogisticsProgressStore;
     private readonly GovernorDeclarationStore _governorDeclarationStore;
+    private readonly bool _allowAuthorizedUnownedNormalActionReads;
     private readonly SnapshotPageStore<ResourceNodeSnapshot> _resourceSnapshots =
         new SnapshotPageStore<ResourceNodeSnapshot>(TimeSpan.FromSeconds(60), 16);
     private readonly SnapshotPageStore<FactoryEntitySnapshot> _factorySnapshots =
@@ -61,11 +62,13 @@ internal sealed partial class GameStateReader
     public GameStateReader(
         GameSessionTracker sessions,
         OverseerLogisticsProgressStore overseerLogisticsProgressStore,
-        GovernorDeclarationStore governorDeclarationStore)
+        GovernorDeclarationStore governorDeclarationStore,
+        bool allowAuthorizedUnownedNormalActionReads = false)
     {
         _sessions = sessions;
         _overseerLogisticsProgressStore = overseerLogisticsProgressStore;
         _governorDeclarationStore = governorDeclarationStore;
+        _allowAuthorizedUnownedNormalActionReads = allowAuthorizedUnownedNormalActionReads;
     }
 
     public GameCallResult<SessionState> GetSessionStateOnMainThread()
@@ -77,7 +80,7 @@ internal sealed partial class GameStateReader
         string? requestedSessionId,
         LocalPlanetRequest request)
     {
-        var accessError = ValidateOwnedPlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
+        var accessError = ValidateReadablePlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
         if (accessError is not null)
         {
             return GameCallResult<PlayerStateSnapshot>.Failed(accessError);
@@ -264,7 +267,7 @@ internal sealed partial class GameStateReader
         string? requestedSessionId,
         LocalPlanetRequest request)
     {
-        var accessError = ValidateOwnedPlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
+        var accessError = ValidateReadablePlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
         if (accessError is not null)
         {
             return GameCallResult<ProgressionStateSnapshot>.Failed(accessError);
@@ -359,7 +362,7 @@ internal sealed partial class GameStateReader
         string? requestedSessionId,
         LocalPlanetRequest request)
     {
-        var accessError = ValidateOwnedPlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
+        var accessError = ValidateReadablePlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
         if (accessError is not null)
         {
             return GameCallResult<RecipeCatalogSnapshot>.Failed(accessError);
@@ -437,7 +440,7 @@ internal sealed partial class GameStateReader
         string? requestedSessionId,
         ListResourceNodesRequest request)
     {
-        var accessError = ValidateOwnedPlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
+        var accessError = ValidateReadablePlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
         if (accessError is not null)
         {
             return GameCallResult<ListResourceNodesResult>.Failed(accessError);
@@ -510,7 +513,7 @@ internal sealed partial class GameStateReader
         string? requestedSessionId,
         InspectResourceNodeRequest request)
     {
-        var accessError = ValidateOwnedPlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
+        var accessError = ValidateReadablePlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
         if (accessError is not null)
         {
             return GameCallResult<ResourceNodeSnapshot>.Failed(accessError);
@@ -550,7 +553,7 @@ internal sealed partial class GameStateReader
         string? requestedSessionId,
         ListFactoryEntitiesRequest request)
     {
-        var accessError = ValidateOwnedPlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
+        var accessError = ValidateReadablePlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
         if (accessError is not null)
         {
             return GameCallResult<ListFactoryEntitiesResult>.Failed(accessError);
@@ -623,50 +626,11 @@ internal sealed partial class GameStateReader
         });
     }
 
-    public GameCallResult<FactoryEntitySnapshot> InspectFactoryEntityOnMainThread(
-        string? requestedSessionId,
-        InspectFactoryEntityRequest request)
-    {
-        var accessError = ValidateOwnedPlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
-        if (accessError is not null)
-        {
-            return GameCallResult<FactoryEntitySnapshot>.Failed(accessError);
-        }
-
-        // Keep the owned boundary first. A missing/incorrectly named ID is an
-        // invalid request, not evidence that a previously observed building vanished.
-        var idError = FactoryObjectReadPolicy.ValidateObjectId(request.ObjectId);
-        if (idError is not null) return GameCallResult<FactoryEntitySnapshot>.Failed(idError);
-        var selectionError = MaterialInventoryCutPolicy.ValidateSelection(request.MaterialInventoryObjectIds);
-        if (selectionError is not null) return GameCallResult<FactoryEntitySnapshot>.Failed(selectionError);
-
-        FactoryEntitySnapshot? snapshot = null;
-        if (request.ObjectId > 0 && request.ObjectId < factory!.entityCursor)
-        {
-            snapshot = TryCaptureFactoryEntity(factory, request.ObjectId);
-            if (snapshot is not null)
-                snapshot.SorterEndpoints = CaptureSorterEndpoints(factory, request.ObjectId);
-            if (snapshot?.ComponentKind == "belt")
-                snapshot.BeltCargo = CaptureBeltCargo(factory, request.ObjectId);
-        }
-        else if (request.ObjectId < 0 && -request.ObjectId < factory!.prebuildCursor)
-        {
-            snapshot = TryCapturePrebuild(factory, -request.ObjectId);
-        }
-
-        if (snapshot is not null && request.MaterialInventoryObjectIds?.Count > 0)
-            snapshot.MaterialInventoryCut = CaptureMaterialInventoryCut(factory!, request.MaterialInventoryObjectIds);
-
-        return snapshot is null
-            ? InvalidFactoryEntity("The requested factory object no longer exists in the local factory.")
-            : GameCallResult<FactoryEntitySnapshot>.Succeeded(snapshot);
-    }
-
     public GameCallResult<PowerSummarySnapshot> GetPowerSummaryOnMainThread(
         string? requestedSessionId,
         LocalPlanetRequest request)
     {
-        var accessError = ValidateOwnedPlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
+        var accessError = ValidateReadablePlanetOnMainThread(requestedSessionId, request.PlanetId, out var factory);
         if (accessError is not null)
         {
             return GameCallResult<PowerSummarySnapshot>.Failed(accessError);
@@ -737,7 +701,7 @@ internal sealed partial class GameStateReader
         string? requestedSessionId,
         GetOverseerProductionRequest request)
     {
-        var accessError = ValidateOwnedGameDataOnMainThread(requestedSessionId, out var gameData);
+        var accessError = ValidateReadableGameDataOnMainThread(requestedSessionId, out var gameData);
         if (accessError is not null)
         {
             return GameCallResult<OverseerProductionSnapshot>.Failed(accessError);
@@ -832,7 +796,7 @@ internal sealed partial class GameStateReader
         string? requestedSessionId,
         GetOverseerSummaryRequest request)
     {
-        var accessError = ValidateOwnedGameDataOnMainThread(requestedSessionId, out var gameData);
+        var accessError = ValidateReadableGameDataOnMainThread(requestedSessionId, out var gameData);
         if (accessError is not null)
         {
             return GameCallResult<OverseerSummarySnapshot>.Failed(accessError);
@@ -909,7 +873,7 @@ internal sealed partial class GameStateReader
         string? requestedSessionId,
         GetOverseerDiagnosticBundleRequest request)
     {
-        var accessError = ValidateOwnedGameDataOnMainThread(requestedSessionId, out var gameData);
+        var accessError = ValidateReadableGameDataOnMainThread(requestedSessionId, out var gameData);
         if (accessError is not null)
         {
             return GameCallResult<OverseerDiagnosticBundleSnapshot>.Failed(accessError);
@@ -1677,7 +1641,7 @@ internal sealed partial class GameStateReader
         var requestedItemIds = new HashSet<int>(itemIds);
         var logisticsError = TryCaptureOverseerDiagnosticLogisticsRoutes(
             factories,
-            _overseerLogisticsProgressStore,
+            _sessions.IsCurrentSessionOwned ? _overseerLogisticsProgressStore : null,
             ref diagnosticComponentScanCount,
             ref diagnosticSourceReferenceScanCount,
             out var diagnosticLogistics);
@@ -2604,7 +2568,7 @@ internal sealed partial class GameStateReader
         string? requestedSessionId,
         ListAssemblersRequest request)
     {
-        var accessError = ValidateOwnedSessionOnMainThread(requestedSessionId, out var factory);
+        var accessError = ValidateReadableSessionOnMainThread(requestedSessionId, out var factory);
         if (accessError is not null)
         {
             return GameCallResult<ListAssemblersResult>.Failed(accessError);
@@ -2682,7 +2646,7 @@ internal sealed partial class GameStateReader
         string? requestedSessionId,
         InspectAssemblerRequest request)
     {
-        var accessError = ValidateOwnedSessionOnMainThread(requestedSessionId, out var factory);
+        var accessError = ValidateReadableSessionOnMainThread(requestedSessionId, out var factory);
         if (accessError is not null)
         {
             return GameCallResult<AssemblerSnapshot>.Failed(accessError);
@@ -2716,7 +2680,7 @@ internal sealed partial class GameStateReader
 
     public GameCallResult<BuildCatalog> GetBuildCatalogOnMainThread(string? requestedSessionId)
     {
-        var accessError = ValidateOwnedSessionOnMainThread(requestedSessionId, out var factory);
+        var accessError = ValidateReadableSessionOnMainThread(requestedSessionId, out var factory);
         if (accessError is not null)
         {
             return GameCallResult<BuildCatalog>.Failed(accessError);
@@ -3519,7 +3483,7 @@ internal sealed partial class GameStateReader
         string? requestedSessionId,
         LocalPlanetRequest request)
     {
-        var accessError = ValidateOwnedPlanetOnMainThread(requestedSessionId, request.PlanetId, out _);
+        var accessError = ValidateReadablePlanetOnMainThread(requestedSessionId, request.PlanetId, out _);
         if (accessError is not null)
         {
             return GameCallResult<LocalStarSystemSnapshot>.Failed(accessError);
@@ -3718,97 +3682,6 @@ internal sealed partial class GameStateReader
         if (descriptor.isSplitter) return "splitter";
         if (descriptor.isFractionator) return "fractionator";
         return "other";
-    }
-
-    private BridgeError? ValidateOwnedPlanetOnMainThread(
-        string? requestedSessionId,
-        int requestedPlanetId,
-        out PlanetFactory? factory)
-    {
-        var error = ValidateOwnedSessionOnMainThread(requestedSessionId, out factory);
-        if (error is not null)
-        {
-            return error;
-        }
-
-        if (requestedPlanetId <= 0 || factory!.planetId != requestedPlanetId)
-        {
-            factory = null;
-            return BridgeError.Create(
-                BridgeErrorCodes.StaleState,
-                "The requested planet does not match the currently loaded local planet.",
-                true,
-                "Call get_session_state and retry with its current localPlanetId.");
-        }
-
-        return null;
-    }
-
-    private BridgeError? ValidateOwnedSessionOnMainThread(string? requestedSessionId, out PlanetFactory? factory)
-    {
-        factory = null;
-        var error = ValidateOwnedGameDataOnMainThread(requestedSessionId, out var gameData);
-        if (error is not null)
-        {
-            return error;
-        }
-
-        factory = gameData!.localLoadedPlanetFactory;
-        if (factory is null)
-        {
-            return BridgeError.Create(
-                BridgeErrorCodes.NoLocalPlanet,
-                "The owned session does not currently have a loaded local factory.",
-                true,
-                "Wait for the local planet factory to load and retry.");
-        }
-
-        return null;
-    }
-
-    private BridgeError? ValidateOwnedGameDataOnMainThread(string? requestedSessionId, out GameData? gameData)
-    {
-        gameData = null;
-        var state = _sessions.CaptureOnMainThread();
-        if (!state.GameLoaded)
-        {
-            return BridgeError.Create(
-                BridgeErrorCodes.GameNotLoaded,
-                "No game session is currently loaded.",
-                true,
-                "Create and load a Spherewright-owned ordinary world, then retry.");
-        }
-
-        if (!state.OwnedBySpherewright)
-        {
-            return BridgeError.Create(
-                BridgeErrorCodes.SessionNotOwned,
-                "The loaded game session was not created by this Spherewright Plugin process, so its contents are restricted.",
-                false,
-                "Return to the main menu and create a Spherewright-owned ordinary world.");
-        }
-
-        if (string.IsNullOrWhiteSpace(requestedSessionId)
-            || !string.Equals(requestedSessionId, state.SessionId, StringComparison.Ordinal))
-        {
-            return BridgeError.Create(
-                BridgeErrorCodes.StaleSession,
-                "The supplied session ID does not match the active owned session.",
-                true,
-                "Call get_session_state and retry with its sessionId.");
-        }
-
-        gameData = GameMain.data;
-        if (gameData is null || !_sessions.IsCurrentSessionOwned)
-        {
-            return BridgeError.Create(
-                BridgeErrorCodes.BridgeNotReady,
-                "The exact owned game data is not ready.",
-                true,
-                "Wait for the owned ordinary world to finish loading and retry.");
-        }
-
-        return null;
     }
 
     private AssemblerSnapshot? TryCaptureAssembler(

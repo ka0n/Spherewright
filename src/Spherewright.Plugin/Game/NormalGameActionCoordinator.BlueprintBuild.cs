@@ -47,15 +47,28 @@ internal sealed partial class NormalGameActionCoordinator
     {
         var common = ValidatePrepareCommon(sessionId, request.PlanetId, request.StateHashVersion);
         if (common.Error is not null) return GameCallResult<PreparedNormalAction>.Failed(common.Error);
+        var preview = CanPrepareUnownedBlueprintPreview(common.Session!.OwnedBySpherewright,
+            request.ResumeBuildId, request.ExpectedStateHash);
+        var capturePrivatePlayer = !common.Session.OwnedBySpherewright;
+        var inputHash = request.ExpectedStateHash;
         if (request.MaximumObjectsToSubmit < 1 || request.MaximumObjectsToSubmit > 32
-            || string.IsNullOrEmpty(request.ExpectedStateHash)
-            || string.IsNullOrEmpty(request.ExpectedPlayerStateHash)) return InvalidPlan("A bounded submission count and fresh site/progress/player hashes are required.");
+            || (!preview && string.IsNullOrEmpty(request.ExpectedStateHash))
+            || (!capturePrivatePlayer && string.IsNullOrEmpty(request.ExpectedPlayerStateHash))) return InvalidPlan("A bounded submission count and fresh site/progress/player hashes are required.");
         if ((request.FoundryIntent is null) != (request.ExpectedFoundryPlanHash is null))
             return InvalidPlan("Foundry intent and expectedFoundryPlanHash must be supplied together for a new finite construction.");
         if (_actions.ActiveValues.Any(a => !a.Terminal)) return GameCallResult<PreparedNormalAction>.Failed(BlueprintError("another_action_active"));
         var player = _reader.GetPlayerStateOnMainThread(sessionId, new LocalPlanetRequest { PlanetId = request.PlanetId });
         if (!player.Success) return GameCallResult<PreparedNormalAction>.Failed(player.Error!);
-        if (player.Value!.StateHash != request.ExpectedPlayerStateHash) return StalePlan("Player state changed before blueprint preparation.");
+        if (!BlueprintPlayerInspectionMatches(capturePrivatePlayer, request.ExpectedPlayerStateHash, player.Value!.StateHash))
+            return StalePlan("Player state changed before blueprint preparation.");
+        var siteRequest = request.Site;
+        if (capturePrivatePlayer && string.IsNullOrEmpty(request.ExpectedPlayerStateHash) && siteRequest is not null)
+        {
+            if (!string.IsNullOrEmpty(siteRequest.ExpectedPlayerStateHash))
+                return InvalidPlan("Use the same supplied player hash in request and site, or leave both empty for private unowned action inspection.");
+            siteRequest = PluginJson.Deserialize<BlueprintSiteRequest>(PluginJson.Serialize(siteRequest))!;
+            siteRequest.ExpectedPlayerStateHash = player.Value.StateHash;
+        }
         var playerError = BlueprintPlayerReady(player.Value);
         if (playerError is not null) return GameCallResult<PreparedNormalAction>.Failed(BlueprintError(playerError));
         BlueprintBuildState build;
@@ -64,10 +77,10 @@ internal sealed partial class NormalGameActionCoordinator
         {
             if (request.BlueprintCode is not null || request.Site is not null || request.FoundryIntent is not null
                 || request.ExpectedFoundryPlanHash is not null || !Guid.TryParse(request.ResumeBuildId, out _))
-                return InvalidPlan("Resume accepts an owned buildId only, never a replacement code/site or old token.");
+                return InvalidPlan("Resume accepts a current-scope buildId only, never a replacement code/site or old token.");
             if (!_blueprints.TryRead(out var builds)) return GameCallResult<PreparedNormalAction>.Failed(BlueprintError("blueprint_progress_store_unavailable"));
             build = builds.SingleOrDefault(b => b.BuildId == request.ResumeBuildId && b.Site.PlanetId == request.PlanetId)!;
-            if (build is null) return InvalidPlan("No such finite construction belongs to this owned planet.");
+            if (build is null) return InvalidPlan("No such finite construction belongs to the current session scope and planet.");
             var generation = build.Generation;
             var blockers = ReconcileBlueprintState(build);
             if (generation != build.Generation)
@@ -86,8 +99,8 @@ internal sealed partial class NormalGameActionCoordinator
         }
         else
         {
-            if (request.BlueprintCode is null || request.Site is null
-                || request.Site.ExpectedPlayerStateHash != request.ExpectedPlayerStateHash)
+            if (request.BlueprintCode is null || siteRequest is null
+                || siteRequest.ExpectedPlayerStateHash != player.Value.StateHash)
                 return InvalidPlan("A new module requires explicit code, placement and the same fresh player hash.");
             if (!_blueprints.TryRead(out var builds) || builds.Count >= 32)
                 return GameCallResult<PreparedNormalAction>.Failed(BlueprintError("blueprint_progress_store_unavailable_or_full"));
@@ -95,30 +108,34 @@ internal sealed partial class NormalGameActionCoordinator
             FoundryConstructionPlan? foundryPlan = null;
             if (request.FoundryIntent is not null)
             {
-                var compiled = ReadFoundryConstruction(sessionId!, request.PlanetId, request.BlueprintCode, request.Site, request.FoundryIntent);
+                var compiled = ReadFoundryConstruction(sessionId!, request.PlanetId, request.BlueprintCode, siteRequest, request.FoundryIntent);
                 if (!compiled.Success || compiled.Value?.BlueprintSite is null || compiled.Value.Construction is null)
                     return GameCallResult<PreparedNormalAction>.Failed(compiled.Error!);
                 site = compiled.Value.BlueprintSite; foundryPlan = compiled.Value.Construction;
-                if (foundryPlan.PlanHash != request.ExpectedFoundryPlanHash) return StalePlan("Foundry intent, layout or whole construction graph changed after inspection.");
+                if (!(preview && string.IsNullOrEmpty(request.ExpectedFoundryPlanHash))
+                    && foundryPlan.PlanHash != request.ExpectedFoundryPlanHash) return StalePlan("Foundry intent, layout or whole construction graph changed after inspection.");
                 if (!foundryPlan.CanPrepare) return GameCallResult<PreparedNormalAction>.Failed(BlueprintError("foundry_plan_blocked:" + string.Join(";", foundryPlan.Blockers)));
             }
             else
             {
                 var inspection = _reader.InspectBlueprintOnMainThread(sessionId, new InspectBlueprintRequest
-                { PlanetId = request.PlanetId, BlueprintCode = request.BlueprintCode, Site = request.Site });
+                { PlanetId = request.PlanetId, BlueprintCode = request.BlueprintCode, Site = siteRequest });
                 if (!inspection.Success || inspection.Value?.Site is null) return GameCallResult<PreparedNormalAction>.Failed(inspection.Error!);
                 site = inspection.Value.Site;
             }
-            if (site.AssessmentHash != request.ExpectedStateHash) return StalePlan("Blueprint site or whole budget changed after inspection.");
+            if (!preview && site.AssessmentHash != request.ExpectedStateHash) return StalePlan("Blueprint site or whole budget changed after inspection.");
             if (!site.NativeCheckPassed || !site.InventorySufficient || !site.TechnologySatisfied || site.Blockers.Count != 0)
                 return GameCallResult<PreparedNormalAction>.Failed(BlueprintError("blueprint_site_blocked:" + string.Join(";", site.Blockers)));
             build = BlueprintBuildState.Create(site, foundryPlan, request.FoundryIntent);
+            inputHash = site.AssessmentHash;
         }
         var plan = NormalActionPlanPayload.Blueprint(sessionId!, request.PlanetId, common.Session!.Revision,
-            player.Value.StateHash, build, request.ExpectedStateHash, request.MaximumObjectsToSubmit,
-            resume ? null : request.BlueprintCode, request.Site, false);
+            player.Value.StateHash, build, inputHash, request.MaximumObjectsToSubmit,
+            resume ? null : request.BlueprintCode, siteRequest, false);
         var prepared = AddPreparedPlan(plan, common.Session, Math.Max(600, build.Objects.Count * 120),
-            "Finite approved module only: at most one native prebuild per game tick; each debit and completed object is durably recorded. Batch limit pauses without rollback. Poll action to terminal and read blueprint progress; restart requires fresh prepare of this buildId, never whole-module replay.");
+            common.Session.OwnedBySpherewright
+                ? "Finite approved module only: at most one native prebuild per game tick; each debit and completed object is durably recorded. Batch limit pauses without rollback. Poll action to terminal and read blueprint progress; restart requires fresh prepare of this buildId, never whole-module replay."
+                : "Review the returned BlueprintBuild.Site and whole budget before commit. At most one native prebuild per tick; progress exists only in this exact running session. Poll to terminal and fresh-read progress. A world or Plugin restart discards progress; never replay already submitted objects.");
         if (prepared.Value is not null)
         {
             prepared.Value.BlueprintBuild = BlueprintSnapshot(build, common.Session, new List<string>());
@@ -183,7 +200,7 @@ internal sealed partial class NormalGameActionCoordinator
         if (!_blueprints.TryPut(build))
         { Fail(action, "Finite plan could not be made durable; no native object was submitted."); return; }
         action.State = NormalActionStates.WaitingForGame;
-        action.Message = "Finite plan accepted and durable; the bounded executor will submit only dependency-ready new objects.";
+        action.Message = "Finite plan accepted and recorded in its current scope; the bounded executor will submit only dependency-ready new objects.";
         // First object is deliberately not submitted inside commit; cancellation/aggregation
         // remains an ordinary action, not an apparent atomic blueprint stamp.
     }
@@ -215,7 +232,7 @@ internal sealed partial class NormalGameActionCoordinator
             if (build.Objects.All(o => o.State == BlueprintObjectStates.Completed))
             { StopBlueprintAction(action, "completed", "Every finite-plan object has exact native cost, configuration and reciprocal connection proof. Supply/power/production need separate fresh validation."); return; }
             if (build.SubmittedThisAction >= build.MaximumObjectsToSubmit)
-            { StopBlueprintAction(action, "paused", "The approved submission limit was reached. Completed objects remain; save/restart or fresh prepare this buildId to continue only unsubmitted objects."); return; }
+            { StopBlueprintAction(action, "paused", "The approved submission limit was reached. Completed objects remain; fresh prepare this buildId in the current scope to continue only unsubmitted objects. Unowned progress does not survive restart."); return; }
             var player = _reader.GetPlayerStateOnMainThread(action.SessionId, new LocalPlanetRequest { PlanetId = action.PlanetId });
             var readyError = player.Success ? BlueprintPlayerReady(player.Value!) : "player_unavailable";
             if (readyError is not null) { StopBlueprintAction(action, "blocked", readyError); return; }

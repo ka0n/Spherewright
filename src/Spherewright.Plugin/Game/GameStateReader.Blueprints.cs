@@ -10,7 +10,9 @@ internal sealed partial class GameStateReader
 {
     public GameCallResult<BlueprintInspection> InspectBlueprintOnMainThread(string? sessionId, InspectBlueprintRequest request)
     {
-        var error = ValidateOwnedPlanetOnMainThread(sessionId, request.PlanetId, out _);
+        var error = _allowAuthorizedUnownedNormalActionReads
+            ? ValidateBlueprintActionPlanetOnMainThread(sessionId, request.PlanetId, out _)
+            : ValidateOwnedPlanetOnMainThread(sessionId, request.PlanetId, out _);
         if (error is not null) return GameCallResult<BlueprintInspection>.Failed(error);
         try
         {

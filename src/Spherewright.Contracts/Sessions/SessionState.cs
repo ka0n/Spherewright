@@ -10,6 +10,8 @@ public sealed class SessionState
 
     public bool AccessRestricted { get; set; }
 
+    public string ReadAccessMode { get; set; } = ReadAccessModes.Restricted;
+
     public string GameVersion { get; set; } = string.Empty;
 
     public string? SessionId { get; set; }
@@ -29,6 +31,8 @@ public sealed class SessionState
     public string SandboxMode { get; set; } = SandboxModeStates.Unknown;
 
     public float? ResourceMultiplier { get; set; }
+
+    public float? DarkFogAggressiveness { get; set; }
 
     public bool WritesAllowed { get; set; }
 

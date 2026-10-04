@@ -9,8 +9,9 @@ using Spherewright.Plugin.Transport;
 
 namespace Spherewright.Plugin.Game;
 
-// Same current-user ACL + flush/atomic-replace pattern as Journal/Overseer. Only the
-// current registered identity selects this file; no save picker, prefix test or input path.
+// Owned scope uses the existing current-user ACL + flush/atomic-replace pattern
+// selected only by the registered identity. Unowned scope never selects a file:
+// progress is deep-copied memory bound to the current generated session ID.
 internal sealed class BlueprintBuildStore
 {
     private const int MaximumBuilds = 32;
@@ -23,6 +24,7 @@ internal sealed class BlueprintBuildStore
     private string? _path;
     private BlueprintBuildDocument? _document;
     private bool _failed;
+    private bool _ownedScope;
 
     public BlueprintBuildStore(string runtimeDirectory, string gameVersion, GameSessionTracker sessions, ManualLogSource logger)
     {
@@ -45,6 +47,9 @@ internal sealed class BlueprintBuildStore
         try
         {
             state.Validate();
+            if (_path is null && (state.Site.SessionId != _sessionId
+                || (!string.IsNullOrEmpty(state.ActiveSessionId) && state.ActiveSessionId != _sessionId)))
+                throw new InvalidDataException("Finite progress belongs to another manual session.");
             var proposed = Clone(_document!);
             var index = proposed.Builds.FindIndex(b => b.BuildId == state.BuildId);
             if (index >= 0)
@@ -61,6 +66,13 @@ internal sealed class BlueprintBuildStore
             }
             var bytes = new UTF8Encoding(false).GetBytes(PluginJson.Serialize(proposed));
             if (bytes.Length > MaximumBytes) throw new InvalidDataException("Finite plan store size limit.");
+            if (_path is null)
+            {
+                // Exact manual-session progress only. Never select a file, recover a
+                // document, or create save provenance from an unowned session.
+                _document = Clone(proposed);
+                return true;
+            }
             WindowsCurrentUserSecurity.EnsureSecureDirectory(_directory);
             temporaryPath = Path.Combine(_directory, ".blueprints-" + Guid.NewGuid().ToString("N") + ".tmp");
             WindowsCurrentUserSecurity.WriteSecureNewFile(temporaryPath, bytes);
@@ -85,10 +97,23 @@ internal sealed class BlueprintBuildStore
 
     private bool Attach()
     {
-        if (!_sessions.IsCurrentSessionOwned || string.IsNullOrEmpty(_sessions.OwnedSaveName)
-            || string.IsNullOrEmpty(_sessions.SessionId)) return false;
-        if (_sessionId == _sessions.SessionId) return !_failed && _document is not null;
+        if (string.IsNullOrEmpty(_sessions.SessionId)
+            || (!_sessions.IsCurrentSessionOwned && !_sessions.IsCurrentExactUnownedSession))
+        {
+            _sessionId = null; _document = null; _path = null; _failed = false;
+            return false;
+        }
+        if (!_sessions.IsCurrentSessionOwned && !_sessions.IsCurrentSessionAuthorizedForNormalActions) return false;
+        if (_sessions.IsCurrentSessionOwned && string.IsNullOrEmpty(_sessions.OwnedSaveName)) return false;
+        if (_sessionId == _sessions.SessionId && _ownedScope == _sessions.IsCurrentSessionOwned)
+            return !_failed && _document is not null;
         _sessionId = _sessions.SessionId; _document = null; _path = null; _failed = false;
+        _ownedScope = _sessions.IsCurrentSessionOwned;
+        if (!_sessions.IsCurrentSessionOwned)
+        {
+            _document = new BlueprintBuildDocument { IdentityHash = _sessionId!, GameVersion = _gameVersion };
+            return true;
+        }
         try
         {
             WindowsCurrentUserSecurity.EnsureSecureDirectory(_directory);

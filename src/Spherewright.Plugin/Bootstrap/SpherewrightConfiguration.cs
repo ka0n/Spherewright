@@ -39,6 +39,10 @@ internal sealed class SpherewrightConfiguration
 
     public bool AllowWrites { get; private set; }
 
+    public bool AllowUnownedRichReads { get; private set; }
+
+    public bool AllowUnownedNormalWrites { get; private set; }
+
     public bool AllowUserSaveImport { get; private set; }
 
     public bool RequirePeacefulSave { get; private set; }
@@ -75,12 +79,16 @@ internal sealed class SpherewrightConfiguration
             RuntimeDescriptorDirectory = config.Bind("Security", "RuntimeDescriptorDirectory", "%LOCALAPPDATA%/Spherewright/runtime", "Directory used for protected runtime descriptors. Use forward slashes so BepInEx does not interpret backslash escapes.").Value,
             RotateBridgeTokenOnStart = config.Bind("Security", "RotateBridgeTokenOnStart", true, "Rotate the bridge token on each Plugin start.").Value,
             AllowWrites = config.Bind("Safety", "AllowWrites", false, "Allow explicitly committed game writes. The default remains read-only.").Value,
+            AllowUnownedRichReads = config.Bind("Safety", "AllowUnownedRichReads", false,
+                "Allow rich read-only observation of the exact currently loaded unowned world. Does not grant ownership, writes or import permission.").Value,
+            AllowUnownedNormalWrites = config.Bind("Safety", "AllowUnownedNormalWrites", false,
+                "Allow normal prepare/commit game writes on the exact currently loaded unowned session when Safety.AllowWrites is also enabled. Does not grant ownership or protected save provenance.").Value,
             AllowUserSaveImport = config.Bind(
                 "Safety",
                 "AllowUserSaveImport",
                 false,
                 "Allow a player-loaded unowned world to be cloned into a new Spherewright-owned save after an explicit confirmation in the Agent conversation.").Value,
-            RequirePeacefulSave = config.Bind("Safety", "RequirePeacefulSave", true, "Require confirmed peaceful mode before any future write.").Value,
+            RequirePeacefulSave = config.Bind("Safety", "RequirePeacefulSave", true, "Peaceful-mode policy applies to owned/protected save provenance, including import and recovery; it does not gate explicitly authorized unowned normal actions.").Value,
             PlanTokenLifetimeSeconds = config.Bind("Safety", "PlanTokenLifetimeSeconds", 60, "Lifetime of a dry-run plan token in seconds.").Value,
             IdempotencyRetentionMinutes = config.Bind("Safety", "IdempotencyRetentionMinutes", 30, "Configured action-result retention window in minutes.").Value,
             MaxIdempotencyEntriesPerSession = config.Bind("Safety", "MaxIdempotencyEntriesPerSession", 1024, "Maximum cached idempotent action results per Plugin process.").Value,

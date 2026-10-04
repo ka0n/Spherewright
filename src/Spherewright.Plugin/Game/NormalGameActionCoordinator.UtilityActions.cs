@@ -245,97 +245,11 @@ internal sealed partial class NormalGameActionCoordinator
         return false;
     }
 
-    private GameCallResult<PreparedNormalAction> PrepareSavePlanOnMainThread(
-        string? requestedSessionId,
-        PrepareSaveRequest request)
-    {
-        var common = ValidatePrepareCommon(requestedSessionId, request.PlanetId, request.StateHashVersion);
-        if (common.Error is not null)
-        {
-            return GameCallResult<PreparedNormalAction>.Failed(common.Error);
-        }
-
-        if (request.ExpectedRevision != common.Session!.Revision)
-        {
-            return StalePlan("The owned session revision changed after inspection.");
-        }
-
-        if (string.IsNullOrWhiteSpace(common.Session.SaveName)
-            || GameMain.data?.localLoadedPlanetFactory is null)
-        {
-            return NotReadyPlan("The exact Spherewright-owned save identity or local factory is unavailable.");
-        }
-
-        var expectedHash = CanonicalStateHash.Combine(
-            NormalActionKinds.Save,
-            _sessions.SessionId,
-            request.PlanetId,
-            request.ExpectedRevision,
-            common.Session.SaveName);
-        var payload = NormalActionPlanPayload.Save(
-            _sessions.SessionId!,
-            request.PlanetId,
-            expectedHash,
-            common.Session.SaveName!,
-            request.ExpectedRevision);
-        return AddPreparedPlan(
-            payload,
-            common.Session,
-            1,
-            "GameSave.SaveCurrentGame returns true for the exact high-entropy save name owned by this session, and the saved game tick is recorded.");
-    }
-
-    private BridgeError? RevalidateSaveOnMainThread(NormalActionPlanPayload plan)
-    {
-        var session = _sessions.CaptureOnMainThread();
-        if (!session.OwnedBySpherewright
-            || session.LocalPlanetId != plan.PlanetId
-            || session.Revision != plan.SaveExpectedRevision
-            || !string.Equals(session.SaveName, plan.SaveOwnedName, StringComparison.Ordinal)
-            || GameMain.data?.localLoadedPlanetFactory is null)
-        {
-            return Stale("The owned save identity, planet, factory, or session revision changed after prepare.");
-        }
-
-        return null;
-    }
-
-    private void ExecuteSaveOnMainThread(ActionRecord action)
-    {
-        if (!_sessions.TrySaveOwnedWorldNowOnMainThread(out var error))
-        {
-            throw new InvalidOperationException(error ?? "DSP's normal save API did not confirm success.");
-        }
-
-        var session = _sessions.CaptureOnMainThread();
-        if (!session.LastOwnedSaveGameTick.HasValue)
-        {
-            throw new InvalidOperationException("The owned save completed without a recorded game tick.");
-        }
-
-        action.State = NormalActionStates.Completed;
-        action.Terminal = true;
-        action.Succeeded = true;
-        action.CompletedAtGameTick = GameMain.gameTick;
-        action.Message = $"DSP's normal save API confirmed the exact owned save at game tick {session.LastOwnedSaveGameTick.Value}.";
-        action.AfterInventory = CaptureInventory(GameMain.mainPlayer);
-        action.AfterStateHash = CanonicalStateHash.Combine(
-            NormalActionKinds.Save,
-            action.SessionId,
-            action.PlanetId,
-            session.LastOwnedSaveGameTick.Value,
-            session.Revision);
-    }
-
     private sealed partial class NormalActionPlanPayload
     {
         public int FuelItemId { get; private set; }
 
         public int FuelGrid { get; private set; }
-
-        public long SaveExpectedRevision { get; private set; }
-
-        public string SaveOwnedName { get; private set; } = string.Empty;
 
         public static NormalActionPlanPayload Refuel(
             string sessionId,
@@ -357,20 +271,5 @@ internal sealed partial class NormalGameActionCoordinator
                 EstimatedTicks = 1,
             };
 
-        public static NormalActionPlanPayload Save(
-            string sessionId,
-            int planetId,
-            string expectedStateHash,
-            string saveOwnedName,
-            long expectedRevision) => new NormalActionPlanPayload
-            {
-                ActionKind = NormalActionKinds.Save,
-                SessionId = sessionId,
-                PlanetId = planetId,
-                ExpectedStateHash = expectedStateHash,
-                SaveOwnedName = saveOwnedName,
-                SaveExpectedRevision = expectedRevision,
-                EstimatedTicks = 1,
-            };
     }
 }

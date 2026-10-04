@@ -7,6 +7,7 @@
       "src\\Spherewright.Mcp\\Spherewright.Mcp.csproj",
       "tests\\Spherewright.Contracts.Tests\\Spherewright.Contracts.Tests.csproj",
       "tests\\Spherewright.Bridge.Core.Tests\\Spherewright.Bridge.Core.Tests.csproj",
+      "tests\\Spherewright.Plugin.ReadAccess.Tests\\Spherewright.Plugin.ReadAccess.Tests.csproj",
       "tests\\Spherewright.Mcp.Tests\\Spherewright.Mcp.Tests.csproj"
     ]
   }

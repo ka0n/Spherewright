@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Spherewright.Bridge.Core\Spherewright.Bridge.Core.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Spherewright.Plugin\Bootstrap\SpherewrightConfiguration.cs" Link="Production\SpherewrightConfiguration.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\GameSessionTracker.ReadAccess.cs" Link="Production\GameSessionTracker.ReadAccess.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\GameSessionTracker.NormalActions.cs" Link="Production\GameSessionTracker.NormalActions.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\GameStateReader.ReadAccess.cs" Link="Production\GameStateReader.ReadAccess.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\GameStateReader.FactoryInspection.cs" Link="Production\GameStateReader.FactoryInspection.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\NormalGameActionCoordinator.PrepareAuthorization.cs" Link="Production\NormalGameActionCoordinator.PrepareAuthorization.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\NormalGameActionCoordinator.ActiveActions.cs" Link="Production\NormalGameActionCoordinator.ActiveActions.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\UserSaveImportCoordinator.cs" Link="Production\UserSaveImportCoordinator.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\ResearchResultAutoAcknowledger.cs" Link="Production\ResearchResultAutoAcknowledger.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\NormalGameActionCoordinator.Save.cs" Link="Production\NormalGameActionCoordinator.Save.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\NormalGameActionCoordinator.Terminal.cs" Link="Production\NormalGameActionCoordinator.Terminal.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\NormalGameActionCoordinator.FlightAuthority.cs" Link="Production\NormalGameActionCoordinator.FlightAuthority.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\NormalGameActionCoordinator.BlueprintAuthority.cs" Link="Production\NormalGameActionCoordinator.BlueprintAuthority.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\NormalGameActionCoordinator.BlueprintCancel.cs" Link="Production\NormalGameActionCoordinator.BlueprintCancel.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\BlueprintBuildStore.cs" Link="Production\BlueprintBuildStore.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Transport\PluginJson.cs" Link="Production\PluginJson.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\GameCallResult.cs" Link="Production\GameCallResult.cs" />
+  </ItemGroup>
+</Project>

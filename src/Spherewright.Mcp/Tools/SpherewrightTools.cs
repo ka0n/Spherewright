@@ -68,7 +68,7 @@ public static partial class SpherewrightTools
         Destructive = false,
         Idempotent = true,
         OpenWorld = false)]
-    [Description("Returns a privacy-gated game-session snapshot. Before the first gameplay action in a session, read MCP resource spherewright://agent/playbooks/opening-movement-v1. At the main menu, gameLoaded=false is expected before protected resume. restartResumeAvailable advertises a stored ticket, not unexpired authority or final native menu readiness: fresh prepare_resume_owned_game checks both. For an expired healthy primary use only the documented reauthorize_expired_primary disclosure and subsequent confirmation flow, never edit expiry. Do not wait for a loaded world before calling prepare. Save, planet, and factory metadata are returned only for an owned world.")]
+    [Description("Returns a privacy-gated game-session snapshot. Before the first gameplay action in a session, read MCP resource spherewright://agent/playbooks/opening-movement-v1. At the main menu, gameLoaded=false is expected before protected resume. restartResumeAvailable advertises a stored ticket, not unexpired authority or final native menu readiness: fresh prepare_resume_owned_game checks both. For an expired healthy primary use only the documented reauthorize_expired_primary disclosure and subsequent confirmation flow, never edit expiry. Do not wait for a loaded world before calling prepare. readAccessMode=observed_unowned requires Safety.AllowUnownedRichReads independently of normal action authority. Exact current unowned sessions can have writesAllowed=true only with Safety.AllowWrites and Safety.AllowUnownedNormalWrites; ownership stays false. Dark Fog aggressiveness is nullable telemetry, never an unowned action gate. Import, resume and checkpoint reload retain protected provenance.")]
     public static async Task<CallToolResult> GetSessionStateAsync(
         [Description("Injected authenticated bridge client.")] IBridgeClient bridgeClient,
         [Description("Cancellation token supplied by the MCP host.")] CancellationToken cancellationToken)
@@ -79,12 +79,12 @@ public static partial class SpherewrightTools
 
     [McpServerTool(
         Name = "spherewright_get_player_state",
-        Title = "Get player state in the owned ordinary world",
+        Title = "Get player state in the current readable world",
         ReadOnly = true,
         Destructive = false,
         Idempotent = true,
         OpenWorld = false)]
-    [Description("Returns a main-thread snapshot of position, movement, mecha energy, inventory, handcraft queue, construction drones, autoManageResearchItems and mechaResearchItemBuffer (research points, whole items and remainder points). constructionDrones.working counts all alive non-idle drones, not unfinished buildings; a successful build terminal must not be replayed because this count is still positive. Use bounded read-only readiness checks before the next operation. Compare research buffers with retained inventory and fresh progression when reconciling native research material returns; a backpack increase alone is not a new transfer or production event. It refuses unowned sessions.")]
+    [Description("Returns a main-thread snapshot of position, movement, mecha energy, inventory, handcraft queue, construction drones, autoManageResearchItems and mechaResearchItemBuffer (research points, whole items and remainder points). constructionDrones.working counts all alive non-idle drones, not unfinished buildings; a successful build terminal must not be replayed because this count is still positive. Use bounded read-only readiness checks before the next operation. Compare research buffers with retained inventory and fresh progression when reconciling native research material returns; a backpack increase alone is not a new transfer or production event. It accepts the exact current owned or explicitly observed-unowned session; restricted unowned sessions are refused.")]
     public static async Task<CallToolResult> GetPlayerStateAsync(
         [Description("Injected authenticated bridge client.")] IBridgeClient bridgeClient,
         [Description("Current session ID returned by spherewright_get_session_state.")] string sessionId,
@@ -95,12 +95,12 @@ public static partial class SpherewrightTools
             sessionId,
             new LocalPlanetRequest { PlanetId = planetId },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Player snapshot captured from the owned ordinary world.");
+        return ToToolResult(result, "Player snapshot captured from the current readable world.");
     }
 
     [McpServerTool(
         Name = "spherewright_get_progression_state",
-        Title = "Get technology progression in the owned ordinary world",
+        Title = "Get technology progression in the current readable world",
         ReadOnly = true,
         Destructive = false,
         Idempotent = true,
@@ -116,7 +116,7 @@ public static partial class SpherewrightTools
             sessionId,
             new LocalPlanetRequest { PlanetId = planetId },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Technology progression captured from the owned ordinary world.");
+        return ToToolResult(result, "Technology progression captured from the current readable world.");
     }
 
     [McpServerTool(
@@ -180,7 +180,7 @@ public static partial class SpherewrightTools
 
     [McpServerTool(
         Name = "spherewright_list_resource_nodes",
-        Title = "List resource nodes in the owned ordinary world",
+        Title = "List resource nodes in the current readable world",
         ReadOnly = true,
         Destructive = false,
         Idempotent = true,
@@ -209,7 +209,7 @@ public static partial class SpherewrightTools
                 Cursor = string.IsNullOrWhiteSpace(cursor) ? null : cursor,
             },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Resource-node page captured from one immutable owned-world snapshot.");
+        return ToToolResult(result, "Resource-node page captured from one immutable current-world snapshot.");
     }
 
     [McpServerTool(
@@ -232,7 +232,7 @@ public static partial class SpherewrightTools
             sessionId,
             new InspectResourceNodeRequest { PlanetId = planetId, Kind = kind, NodeId = nodeId },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Live resource node captured from the owned ordinary world.");
+        return ToToolResult(result, "Live resource node captured from the current readable world.");
     }
 
     [McpServerTool(
@@ -266,7 +266,7 @@ public static partial class SpherewrightTools
                 Cursor = string.IsNullOrWhiteSpace(cursor) ? null : cursor,
             },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Factory-object page captured from one immutable owned-world snapshot.");
+        return ToToolResult(result, "Factory-object page captured from one immutable current-world snapshot.");
     }
 
     [McpServerTool(
@@ -276,13 +276,13 @@ public static partial class SpherewrightTools
         Destructive = false,
         Idempotent = true,
         OpenWorld = false)]
-    [Description("Re-reads one built entity (positive objectId) or prebuild (negative objectId) on Unity's main thread. Completed station entities include detailed logisticsStation state and independent live/configuration hashes. A power-generation-current-tick buffer is joules_per_tick, never fuel inventory; zero does not prove empty fuel. For power-generator entities the current reader does not populate isWorking; isWorking=false is not authoritative evidence of a stopped generator. Optional tankFluidCount reports identity-verified total fluid items including zero; null/missing is unknown. Empty tank buffers alone are not zero; the scalar and positive tank-fluid buffer are the same stock, not additive. Belt cargo is not observed in buffers: use the separate detail-only beltCargo object. state=observed reports unique stacks touching only this belt segment at one game tick; unavailable/null is unknown, never zero. The read is bounded to 512 segment cells, with explicit reasons for unobserved seams or invalid references. Adjacent observations can include the same stack: do not sum them, infer flow from a single sample, or use these counts as an upgrade-preservation proof. Optional beltCargo.rearPickup identifies only the aligned native pickup packet when this segment ends an open path. no_aligned_packet does not mean an empty belt; not_applicable/unavailable/null is no queue-head evidence. Aggregated items are not queue order. Compare fresh reciprocal station input and needs/capacity before inferring mixed-input blockage, never call a single snapshot proof of sustained deadlock or clear stock to manufacture throughput. Optional detail-only sorterEndpoints exposes at most16 native slot world positions/outward directions with occupancy, or4 belt virtual orientations. Virtual slot=-1 has unknown physical occupancy, not a free-slot promise. Plan from slot geometry, not building centers; an observed endpoint is not a placement approval. Missing/unavailable geometry is unknown. Lists omit this geometry; existing action/endpoint hashes do not bind either optional observation. Follow bounded directed/reciprocal connections to real consumers; an unfinished trace is not proof that no consumer exists.")]
+    [Description("Re-reads one built entity (positive objectId) or prebuild (negative objectId) on Unity's main thread. The entity and optional material inventory cut use the same public rich-read policy: owned or exact observed_unowned with Safety.AllowUnownedRichReads=true; Safety.AllowUnownedNormalWrites alone never grants public reads, ownership or write authority. Completed station entities include detailed logisticsStation state and independent live/configuration hashes. A power-generation-current-tick buffer is joules_per_tick, never fuel inventory; zero does not prove empty fuel. For power-generator entities the current reader does not populate isWorking; isWorking=false is not authoritative evidence of a stopped generator. Optional tankFluidCount reports identity-verified total fluid items including zero; null/missing is unknown. Empty tank buffers alone are not zero; the scalar and positive tank-fluid buffer are the same stock, not additive. Belt cargo is not observed in buffers: use the separate detail-only beltCargo object. state=observed reports unique stacks touching only this belt segment at one game tick; unavailable/null is unknown, never zero. The read is bounded to 512 segment cells, with explicit reasons for unobserved seams or invalid references. Adjacent observations can include the same stack: do not sum them, infer flow from a single sample, or use these counts as an upgrade-preservation proof. Optional beltCargo.rearPickup identifies only the aligned native pickup packet when this segment ends an open path. no_aligned_packet does not mean an empty belt; not_applicable/unavailable/null is no queue-head evidence. Aggregated items are not queue order. Compare fresh reciprocal station input and needs/capacity before inferring mixed-input blockage, never call a single snapshot proof of sustained deadlock or clear stock to manufacture throughput. Optional detail-only sorterEndpoints exposes at most16 native slot world positions/outward directions with occupancy, or4 belt virtual orientations. Virtual slot=-1 has unknown physical occupancy, not a free-slot promise. Plan from slot geometry, not building centers; an observed endpoint is not a placement approval. Missing/unavailable geometry is unknown. Lists omit this geometry; existing action/endpoint hashes do not bind either optional observation. Follow bounded directed/reciprocal connections to real consumers; an unfinished trace is not proof that no consumer exists.")]
     public static async Task<CallToolResult> InspectFactoryEntityAsync(
         [Description("Injected authenticated bridge client.")] IBridgeClient bridgeClient,
         [Description("Current session ID returned by spherewright_get_session_state.")] string sessionId,
         [Description("Current local planet ID returned by spherewright_get_session_state.")] int planetId,
         [Description("Required nonzero positive entity ID or negative prebuild ID returned by spherewright_list_factory_entities. This read's Bridge field is objectId, not entityId; a first page lacking an ID does not prove absence.")] int objectId,
-        [Description("Optional explicit material cut: at most256 unique positive built-object IDs in this owned local factory. Omit for the ordinary single-object read. Captures selected stock buffers and each selected belt's ENTIRE native cargo path once at the same game tick, at most64 paths / 32768 total cells / 4096 path members. No traversal or automatic selection. Require materialInventoryCut.state=observed; missing/unavailable is unknown, not zero. Inspect all returned path members: counts may include belts outside the selection; never prorate or sum again per belt. A stock cut is not production, flow, source allocation or sustained supply.")] int[]? materialInventoryObjectIds = null,
+        [Description("Optional explicit material cut: at most256 unique positive built-object IDs in this current readable local factory. Omit for the ordinary single-object read. Captures selected stock buffers and each selected belt's ENTIRE native cargo path once at the same game tick, at most64 paths / 32768 total cells / 4096 path members. No traversal or automatic selection. Require materialInventoryCut.state=observed; missing/unavailable is unknown, not zero. Inspect all returned path members: counts may include belts outside the selection; never prorate or sum again per belt. A stock cut is not production, flow, source allocation or sustained supply.")] int[]? materialInventoryObjectIds = null,
         [Description("Cancellation token supplied by the MCP host.")] CancellationToken cancellationToken = default)
     {
         var result = await bridgeClient.InspectFactoryEntityAsync(
@@ -290,7 +290,7 @@ public static partial class SpherewrightTools
             new InspectFactoryEntityRequest
             { PlanetId = planetId, ObjectId = objectId, MaterialInventoryObjectIds = materialInventoryObjectIds?.ToList() ?? new List<int>() },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Live factory object captured from the owned ordinary world.");
+        return ToToolResult(result, "Live factory object captured from the current readable world.");
     }
 
     [McpServerTool(
@@ -311,7 +311,7 @@ public static partial class SpherewrightTools
             sessionId,
             new LocalPlanetRequest { PlanetId = planetId },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Power-network summary captured from the owned ordinary world.");
+        return ToToolResult(result, "Power-network summary captured from the current readable world.");
     }
 
     [McpServerTool(
@@ -321,7 +321,7 @@ public static partial class SpherewrightTools
         Destructive = false,
         Idempotent = true,
         OpenWorld = false)]
-    [Description("Returns a cursor-bound page of all already-created owned factories for up to 64 exact item IDs. Actual rates come from DSP's save-persisted 600-game-tick automatic production and consumption window; this is not an interval ledger, so do not sum overlapping or gapped windows as full-interval conservation, and keep inventory intervals separate. A below-target conservative lower bound is inconclusive, not proof of insufficient actual inflow. Read the Agent playbook before declaring a supply failure. A stopped and fully powered non-extractor with known zero production and a full native output buffer may report output_blocked even when its cycle exceeds the ready window; other diagnoses retain the complete-cycle requirement. The output_buffer_capacity evidence is the next-batch admission threshold, not physical storage capacity: a two-output assembly can already block at 19. An absent finding is not proof of sustainable supply. Theoretical output capacity is independently recomputed from identity-bound current runtime components. Supported assemblers, matrix labs, and resource extractors report bounded findings for material shortage, full output buffers, insufficient power, and exhausted veins; material shortages recursively follow item-admitting physical cargo paths and can cross an exact demand/supply station route into a producer behind the supply station's input belt. Physically proven logistics routes use a protected per-save game-tick window: active or warming shipments do not become shortages, while a truly missing consumer input with a positive demand reservation, available source inventory, a nonempty fleet, and 600 continuous ticks without carrier/order/delivery progress produces only a suspected logistics stall. Refilled input resets the stagnant baseline.")]
+    [Description("Returns a cursor-bound page of all already-created factories of the current readable world for up to 64 exact item IDs. Actual rates come from DSP's save-persisted 600-game-tick automatic production and consumption window; this is not an interval ledger, so do not sum overlapping or gapped windows as full-interval conservation, and keep inventory intervals separate. A below-target conservative lower bound is inconclusive, not proof of insufficient actual inflow. Read the Agent playbook before declaring a supply failure. A stopped and fully powered non-extractor with known zero production and a full native output buffer may report output_blocked even when its cycle exceeds the ready window; other diagnoses retain the complete-cycle requirement. The output_buffer_capacity evidence is the next-batch admission threshold, not physical storage capacity: a two-output assembly can already block at 19. An absent finding is not proof of sustainable supply. Theoretical output capacity is independently recomputed from identity-bound current runtime components. Supported assemblers, matrix labs, and resource extractors report bounded findings for material shortage, full output buffers, insufficient power, and exhausted veins; material shortages recursively follow item-admitting physical cargo paths and can cross an exact demand/supply station route into a producer behind the supply station's input belt. In observed-unowned mode, only current native logistics evidence is returned; protected per-save progress is neither read nor updated. In owned mode, physically proven logistics routes use a protected per-save game-tick window: active or warming shipments do not become shortages, while a truly missing consumer input with a positive demand reservation, available source inventory, a nonempty fleet, and 600 continuous ticks without carrier/order/delivery progress produces only a suspected logistics stall. Refilled input resets the stagnant baseline.")]
     public static async Task<CallToolResult> GetOverseerProductionAsync(
         [Description("Injected authenticated bridge client.")] IBridgeClient bridgeClient,
         [Description("Current session ID returned by spherewright_get_session_state.")] string sessionId,
@@ -339,7 +339,7 @@ public static partial class SpherewrightTools
                 Cursor = string.IsNullOrWhiteSpace(cursor) ? null : cursor,
             },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Save-persisted multi-planet production window captured from the owned ordinary world.");
+        return ToToolResult(result, "Save-persisted multi-planet production window captured from the current readable world.");
     }
 
     [McpServerTool(
@@ -349,7 +349,7 @@ public static partial class SpherewrightTools
         Destructive = false,
         Idempotent = true,
         OpenWorld = false)]
-    [Description("Returns one cursor-bound snapshot page containing per-planet power networks and logistics aggregates for every already-created owned factory, plus one global current-research summary. It does not create or load remote factories.")]
+    [Description("Returns one cursor-bound snapshot page containing per-planet power networks and logistics aggregates for every already-created factory of the current readable world, plus one global current-research summary. It does not create or load remote factories.")]
     public static async Task<CallToolResult> GetOverseerSummaryAsync(
         [Description("Injected authenticated bridge client.")] IBridgeClient bridgeClient,
         [Description("Current session ID returned by spherewright_get_session_state.")] string sessionId,
@@ -365,7 +365,7 @@ public static partial class SpherewrightTools
                 Cursor = string.IsNullOrWhiteSpace(cursor) ? null : cursor,
             },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Multi-planet power, logistics, and research summary captured from the owned ordinary world.");
+        return ToToolResult(result, "Multi-planet power, logistics, and research summary captured from the current readable world.");
     }
 
     [McpServerTool(
@@ -393,7 +393,7 @@ public static partial class SpherewrightTools
                 Cursor = string.IsNullOrWhiteSpace(cursor) ? null : cursor,
             },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Same-tick multi-planet Overseer diagnostic bundle captured from the owned ordinary world.");
+        return ToToolResult(result, "Same-tick multi-planet Overseer diagnostic bundle captured from the current readable world.");
     }
 
     [McpServerTool(
@@ -487,7 +487,7 @@ public static partial class SpherewrightTools
 
     [McpServerTool(
         Name = "spherewright_prepare_build",
-        Title = "Prepare one normal owned-item building",
+        Title = "Prepare one normal inventory-item building",
         ReadOnly = false,
         Destructive = false,
         Idempotent = false,
@@ -600,7 +600,7 @@ public static partial class SpherewrightTools
                 BridgeErrorCodes.BridgeNotReady,
                 "The installed Plugin did not confirm the exact requested belt altitude levels; no construction token is exposed.",
                 false, "Install matching Plugin/MCP files after a normal save and shutdown, then fresh-prepare. Never commit a silently substituted ground or different-height route."));
-        return ToToolResult(result, "One owned-item construction plan prepared through DSP's build validator; no prebuild exists yet.");
+        return ToToolResult(result, "One inventory-item construction plan prepared through DSP's build validator; no prebuild exists yet.");
     }
 
     [McpServerTool(
@@ -610,7 +610,7 @@ public static partial class SpherewrightTools
         Destructive = true,
         Idempotent = true,
         OpenWorld = false)]
-    [Description("Consumes the prepared owned-item budget through the corresponding native click/path/inserter CreatePrebuilds and returns a pollable action. A prepared initial sorter filter is checked on the prebuild and completed entity. Spherewright never calls BuildFinally; normal construction drones must finish every step. Poll actionId to terminal before continuing.")]
+    [Description("Consumes the prepared inventory-item budget through the corresponding native click/path/inserter CreatePrebuilds and returns a pollable action. A prepared initial sorter filter is checked on the prebuild and completed entity. Spherewright never calls BuildFinally; normal construction drones must finish every step. Poll actionId to terminal before continuing.")]
     public static async Task<CallToolResult> CommitBuildAsync(
         IBridgeClient bridgeClient,
         string sessionId,
@@ -853,12 +853,12 @@ public static partial class SpherewrightTools
 
     [McpServerTool(
         Name = "spherewright_prepare_save",
-        Title = "Prepare a save of the owned world",
+        Title = "Prepare a normal save of the current world",
         ReadOnly = false,
         Destructive = false,
         Idempotent = false,
         OpenWorld = false)]
-    [Description("Binds the current revision and exact high-entropy save identity of the active Spherewright-created session without writing a save.")]
+    [Description("Binds the exact session, local planet, revision and current save identity without saving. Owned sessions use the protected primary. With Safety.AllowWrites and Safety.AllowUnownedNormalWrites, exact unowned sessions use the existing native GameMain.gameName slot; missing, recursive or sanitized identities reject. Normal saving does not rename, clone, import, adopt or issue protected restart authority.")]
     public static async Task<CallToolResult> PrepareSaveAsync(
         IBridgeClient bridgeClient,
         string sessionId,
@@ -876,17 +876,17 @@ public static partial class SpherewrightTools
                 StateHashVersion = stateHashVersion,
             },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Owned-world save plan prepared; no save file was written.");
+        return ToToolResult(result, "Current-world save plan prepared; no save file was written.");
     }
 
     [McpServerTool(
         Name = "spherewright_commit_save",
-        Title = "Save the owned world normally",
+        Title = "Save the current world normally",
         ReadOnly = false,
         Destructive = true,
         Idempotent = true,
         OpenWorld = false)]
-    [Description("Calls DSP's normal save API only for the exact current Spherewright-owned save name and records the confirmed game tick; it never enumerates or opens another save.")]
+    [Description("Revalidates the exact prepared session/planet/revision/save identity, then invokes DSP's SaveCurrentGame for that slot. Owned saving retains protected provenance. Authorized unowned saving overwrites only the currently loaded existing native slot, verifies its header tick, and creates no ownership or resume credential. Poll the accepted action; unproven save outcomes quarantine and must not be replayed.")]
     public static async Task<CallToolResult> CommitSaveAsync(
         IBridgeClient bridgeClient,
         string sessionId,
@@ -897,7 +897,7 @@ public static partial class SpherewrightTools
     {
         var request = CreateCommitRequest(sessionId, planetId, planToken, idempotencyKey);
         var result = await bridgeClient.CommitSaveAsync(sessionId, request, cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "DSP confirmed a normal save of the exact active Spherewright-owned world.");
+        return ToToolResult(result, "Normal save accepted for the exact current world; verify its action terminal.");
     }
 
     [McpServerTool(
@@ -958,7 +958,7 @@ public static partial class SpherewrightTools
         Destructive = false,
         Idempotent = false,
         OpenWorld = false)]
-    [Description("Re-reads the owned-world player state and prepares a short-lived normal ground-movement order. Additive surfacePreview samples at most32m of the requested shortest surface arc using at most66 native downward rays. shoreRisk=detected warns of a possible water/shore crossing; partial/unavailable/null is not dry-ground proof. not_detected is not route clearance or guaranteed Walk: small intervening features, obstacles and the actual controller path remain unchecked. Read the agent playbook before movement: a fully observed short crossing distinguishes water in transit from an explicitly above-water terminal suffix; an aggregate warning alone does not identify the landing. This advisory evidence does not change existing hash/commit admission and never chooses or executes another target. For ordinary walking, revise risky/unknown proposals from fresh evidence before commit; after terminal arrival always fresh-read Walk, low speed and energy. It never moves or teleports the player during prepare.")]
+    [Description("Re-reads player state in the current authorized session and prepares a short-lived normal ground-movement order. Additive surfacePreview samples at most32m of the requested shortest surface arc using at most66 native downward rays. shoreRisk=detected warns of a possible water/shore crossing; partial/unavailable/null is not dry-ground proof. not_detected is not route clearance or guaranteed Walk: small intervening features, obstacles and the actual controller path remain unchecked. Read the agent playbook before movement: a fully observed short crossing distinguishes water in transit from an explicitly above-water terminal suffix; an aggregate warning alone does not identify the landing. This advisory evidence does not change existing hash/commit admission and never chooses or executes another target. For ordinary walking, revise risky/unknown proposals from fresh evidence before commit; after terminal arrival always fresh-read Walk, low speed and energy. It never moves or teleports the player during prepare.")]
     public static async Task<CallToolResult> PrepareMoveAsync(
         IBridgeClient bridgeClient,
         string sessionId,
@@ -1013,7 +1013,7 @@ public static partial class SpherewrightTools
         Destructive = false,
         Idempotent = false,
         OpenWorld = false)]
-    [Description("Binds a non-gas destination in the current star, Drive Engine level 2, a nearly full core, usable normal fuel, and stable player/star-system snapshots. Prepare never launches or changes movement.")]
+    [Description("Binds a non-gas destination in the current star, Drive Engine level 2, a nearly full core, usable normal fuel, and stable player/star-system snapshots. Owned flights retain protected pre-flight checkpoints; authorized unowned flights bind the current session and create no pre-flight save or rollback capability. Prepare never launches or changes movement.")]
     public static async Task<CallToolResult> PrepareInterplanetaryFlightAsync(
         IBridgeClient bridgeClient,
         string sessionId,
@@ -1047,7 +1047,7 @@ public static partial class SpherewrightTools
         Destructive = true,
         Idempotent = true,
         OpenWorld = false)]
-    [Description("Uses DSP's native flight/sail transition and sail-energy functions to launch, steer, brake, and land on the bound planet. Poll to terminal: a transient Walk tick does not complete landing or cancel an unfinished exact shore order. Stable arrival still requires 600 consecutive grounded low-speed ticks. A terminal recovery_required requires its matching checkpoint flow, not a competing Move or relabeling success. It never teleports, grants fuel, or enables sandbox fast travel.")]
+    [Description("Uses DSP's native flight/sail transition and sail-energy functions to launch, steer, brake, and land on the bound planet. Poll to terminal: a transient Walk tick does not complete landing or cancel an unfinished exact shore order. Stable arrival still requires 600 consecutive grounded low-speed ticks. Owned terminal recovery_required requires its matching checkpoint flow, not a competing Move or relabeling success. Unowned flights have no checkpoint: physical completion succeeds without sealing, and ordinary failure has no checkpoint recovery authority. It never teleports, grants fuel, or enables sandbox fast travel.")]
     public static async Task<CallToolResult> CommitInterplanetaryFlightAsync(
         IBridgeClient bridgeClient,
         string sessionId,
@@ -1245,12 +1245,12 @@ public static partial class SpherewrightTools
 
     [McpServerTool(
         Name = "spherewright_list_assemblers",
-        Title = "List assemblers in the owned ordinary world",
+        Title = "List assemblers in the current readable world",
         ReadOnly = true,
         Destructive = false,
         Idempotent = true,
         OpenWorld = false)]
-    [Description("Lists a bounded page of assembler snapshots from the active Spherewright-owned ordinary world. It refuses unowned game sessions. This is not a list of every production device: matrix recipes use labs, not assemblers. Use spherewright_list_factory_entities with componentKind=lab for matrix production/research. Choose component families from the runtime recipe catalog; no match in one family or partial page does not prove no producer/consumer exists.")]
+    [Description("Lists a bounded page of assembler snapshots from the active owned or explicitly observed-unowned world. It accepts the exact current owned or explicitly observed-unowned session; restricted unowned sessions are refused. This is not a list of every production device: matrix recipes use labs, not assemblers. Use spherewright_list_factory_entities with componentKind=lab for matrix production/research. Choose component families from the runtime recipe catalog; no match in one family or partial page does not prove no producer/consumer exists.")]
     public static async Task<CallToolResult> ListAssemblersAsync(
         [Description("Injected authenticated bridge client.")] IBridgeClient bridgeClient,
         [Description("Current session ID returned by spherewright_get_session_state.")] string sessionId,
@@ -1262,17 +1262,17 @@ public static partial class SpherewrightTools
             sessionId,
             new ListAssemblersRequest { Limit = limit, Cursor = string.IsNullOrEmpty(cursor) ? null : cursor },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Assembler page captured from the owned ordinary world.");
+        return ToToolResult(result, "Assembler page captured from the current readable world.");
     }
 
     [McpServerTool(
         Name = "spherewright_inspect_assembler",
-        Title = "Inspect an assembler in the owned ordinary world",
+        Title = "Inspect an assembler in the current readable world",
         ReadOnly = true,
         Destructive = false,
         Idempotent = true,
         OpenWorld = false)]
-    [Description("Returns one validated assembler snapshot from the active Spherewright-owned ordinary world. It refuses stale entities and unowned game sessions.")]
+    [Description("Returns one validated assembler snapshot from the active owned or explicitly observed-unowned world. It refuses stale entities and restricted unowned game sessions.")]
     public static async Task<CallToolResult> InspectAssemblerAsync(
         [Description("Injected authenticated bridge client.")] IBridgeClient bridgeClient,
         [Description("Current session ID returned by spherewright_get_session_state.")] string sessionId,
@@ -1283,7 +1283,7 @@ public static partial class SpherewrightTools
             sessionId,
             new InspectAssemblerRequest { EntityId = entityId },
             cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Assembler snapshot captured from the owned ordinary world.");
+        return ToToolResult(result, "Assembler snapshot captured from the current readable world.");
     }
 
     [McpServerTool(
@@ -1293,14 +1293,14 @@ public static partial class SpherewrightTools
         Destructive = false,
         Idempotent = true,
         OpenWorld = false)]
-    [Description("Returns building and recipe candidates with native unlock/availability flags from the owned world's runtime prototypes. Optional fuelPowerProfile reports ordinary thermal/fusion base generation and full-load fuel energy in joules per tick plus the native fuel type mask. Null/missing is unknown, not zero. These catalog ratings are not live generation, inventory or sustainable supply and do not grant Foundry planned-generation credit. It refuses unowned sessions and never changes game state.")]
+    [Description("Returns building and recipe candidates with native unlock/availability flags from the current readable world's runtime prototypes. Optional fuelPowerProfile reports ordinary thermal/fusion base generation and full-load fuel energy in joules per tick plus the native fuel type mask. Null/missing is unknown, not zero. These catalog ratings are not live generation, inventory or sustainable supply and do not grant Foundry planned-generation credit. It refuses restricted unowned sessions and never changes game state.")]
     public static async Task<CallToolResult> GetBuildCatalogAsync(
         [Description("Injected authenticated bridge client.")] IBridgeClient bridgeClient,
         [Description("Current session ID returned by spherewright_get_session_state.")] string sessionId,
         [Description("Cancellation token supplied by the MCP host.")] CancellationToken cancellationToken = default)
     {
         var result = await bridgeClient.GetBuildCatalogAsync(sessionId, cancellationToken).ConfigureAwait(false);
-        return ToToolResult(result, "Live build catalog with native availability flags captured from the owned ordinary world.");
+        return ToToolResult(result, "Live build catalog with native availability flags captured from the current readable world.");
     }
 
     [McpServerTool(
@@ -1350,7 +1350,7 @@ public static partial class SpherewrightTools
         Destructive = false,
         Idempotent = false,
         OpenWorld = false)]
-    [Description("Creates a no-game-side-effect plan bound to the exact currently loaded unowned session and revision. After this tool succeeds, stop and explicitly ask the user the returned confirmationPrompt—even if import was requested earlier. Do not call spherewright_commit_save_import until a subsequent user message clearly confirms. The original save remains unchanged; journal history starts at import.")]
+    [Description("Creates a no-game-side-effect plan bound to the exact currently loaded unowned session and revision. Every normal action must be terminal before import Prepare. After this tool succeeds, stop and explicitly ask the user the returned confirmationPrompt—even if import was requested earlier. Do not call spherewright_commit_save_import until a subsequent user message clearly confirms. The original save remains unchanged; journal history starts at import.")]
     public static async Task<CallToolResult> PrepareUserSaveImportAsync(
         IBridgeClient bridgeClient,
         string sessionId,
@@ -1374,7 +1374,7 @@ public static partial class SpherewrightTools
         Destructive = true,
         Idempotent = true,
         OpenWorld = false)]
-    [Description("Consumes one prepared import plan only after a subsequent explicit user confirmation in the current conversation. Set all three confirmation fields true only when that later user message clearly authorizes this exact prepared import. Uses DSP's normal save API to create and verify a new internally named owned copy; it never names, enumerates, loads, overwrites, renames, or deletes the original save.")]
+    [Description("Consumes one prepared import plan only after a subsequent explicit user confirmation in the current conversation. Rechecks that every normal action is terminal before consuming the plan or starting import. Set all three confirmation fields true only when that later user message clearly authorizes this exact prepared import. Uses DSP's normal save API to create and verify a new internally named owned copy; it never names, enumerates, loads, overwrites, renames, or deletes the original save.")]
     public static async Task<CallToolResult> CommitUserSaveImportAsync(
         IBridgeClient bridgeClient,
         string sessionId,

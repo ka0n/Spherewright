@@ -12,7 +12,7 @@ internal sealed partial class GameStateReader
         BlueprintSiteRequest request, BlueprintInspection inspection, BlueprintData native)
     {
         BlueprintSitePolicy.ValidateRequest(request);
-        var error = ValidateOwnedPlanetOnMainThread(sessionId, planetId, out var factory);
+        var error = ValidateBlueprintActionPlanetOnMainThread(sessionId, planetId, out var factory);
         if (error is not null) return GameCallResult<BlueprintSiteSnapshot>.Failed(error);
         var player = GetPlayerStateOnMainThread(sessionId, new LocalPlanetRequest { PlanetId = planetId });
         if (!player.Success) return GameCallResult<BlueprintSiteSnapshot>.Failed(player.Error!);
