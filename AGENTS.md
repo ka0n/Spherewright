@@ -2,13 +2,15 @@
 
 Spherewright 是《戴森球计划》的外部 Agent 控制层，不内置 LLM、自主目标规划或无界扩产循环。当前开发版本为 **0.4.0 Overseer / Foundry / Governor**：诊断、有限施工与配平，并为跨星系扩张准备；实际跨恒星航行属于 0.5。版本验收与发行门见 [ROADMAP.md](ROADMAP.md)，事实进度只看 [当前快照](docs/current-status.md)，不可用历史段落替代新现场。
 
-## 角色和工作入口
+## Fork-Steuerung（ka0n/Spherewright）
 
-- root 主会话保持现有模型；两只 Luna 均为 **gpt-6-luna / max**。root 确定目标、批准范围、困难接口与安全边界，处理设计/代码实质变更并独立验收游戏结果；一只 Luna 是唯一游戏 writer，只在批准的有限阶段内准备参数、复用固定入口、执行并取证，不自授权新工序、不自签独立验收。按需另启一只离线维护 Luna，只做直接相关离线测试、按 root 已核验事实整理单份事件/快照短引用，以及 root 确认证据和范围后的单一目的 commit/push 与准确 SHA 的 CI 收集；不触碰游戏、Bridge、加载、保存或部署。各任务按明确文件分区；Git commit/push 仅由离线维护 Luna 串行执行，禁止 `git add .` 或混入他人 dirty 改动。CI 收集可与不依赖该变更的游戏准备/取证并行；pending 不算通过，main 上 red 先修。十写后的独立审计、文档、commit/push、绿 CI 和 root 明确交接门保持不变。无需时不保留额外代理，不另派 Sol/Terra，不擅自换模型/推理档位。
-- 成熟工序只交一个短任务包：阶段结果与停止条件；批准对象、入口、参数、数量/时间预算；当前证据引用及 accepted/在途边界。游戏 Luna 返回结果、accepted/在途、实际差量、失败字段、原证据索引、未证明项和下一 blocker。完整回执留在受保护证据库，不在对话里复制大日志；主会话直接核原始回执和覆盖，不重采无变化证据。
+- Steering 决定 scope、架构、授权边界与下一步；Execution-Chats 或 Codex 可在已批准范围内直接使用当前可用工具执行任务，不要求特定模型、Agent、Luna、root/writer 角色或上游内部委派结构。
+- 工具与 Agent 的选择不由 `AvaloNero/Spherewright` 的内部工作流规定。若继承的工作流/Agent 组织规则与 `ka0n/Spherewright` 的明确 Steering-/Owner-决定冲突，以当前 Steering-/Owner-决定为准。
+- 本文件其余技术 Safety、协议、所有权、保存/恢复、部署、幂等、审计和测试约束仍然具有约束力；上述 fork 规则不得被解释为放宽任何游戏或运行时安全边界。
+- 不得在没有明确 Steering-/Owner-决定的情况下修改 `AvaloNero/Spherewright`。对本 fork 的 Git/GitHub 写操作必须保持批准 scope、可审计且禁止不必要的 force update。
 - 固定模板只更换现场参数。直接复用 `scripts/SpherewrightActionClient.ps1` 的 `Invoke-SpherewrightNormalAction`、`ValidatePrepared`、`Wait-SpherewrightAction` 和 `Wait-SpherewrightPlayerSettled`（检查 `.settled` 后取 `.player`，返回包装不是玩家 DTO）；科研→核验→保存及单仓取材→手搓→核验→保存薄模板见 `scripts/SpherewrightStageTools.ps1`，分别须预留两/三个外部 accepted 槽位，不自动选目标。需要受保护原回执时，普通客户端之后加载现有 `.local/SpherewrightAuditedBridgeClient.ps1`，最后加载薄模板（模板不重新导入/覆盖 transport）。短命直接 Bridge 调用中的 prepare 和 commit 必须在同一受保护调用方上下文，不能为跨进程携带而打印或落盘 token。普通 MCP 双工具调用仍遵守公开协议。
-- 已批准且前置满足的相邻动作可在一个有限阶段内逐步 fresh prepare/commit/terminal/readback，阶段末统一整理。不要每步重读全历史、重写 caller、重开方案讨论或等无关 CI。两次同类原生拒绝、真实偏差或授权门触发即停，主会话重设计；成功前缀不重做。
-- 委派到首个业务 prepare、prepare/commit 到 terminal/读回、游戏物理等待、取证/验收/文档/Git/CI 分别计时。准备超时要真正收敛或停止，不反复续时；**超时本身不是接管许可**。接管前必须证明原执行者已停止、无在途动作、无未核销结果，并完成单写者交接。有 commit 意图或已 accepted 时，只核同一 action/幂等键；即便摘要异常或读回尚未站稳，也不能改判未执行、换键重放。
+- 已批准且前置满足的相邻动作可在一个有限阶段内逐步 fresh prepare/commit/terminal/readback，阶段末统一整理。不要每步重读全历史、重写 caller、重开方案讨论或等无关 CI。两次同类原生拒绝、真实偏差或授权门触发即停并交回 Steering 重设计；成功前缀不重做。
+- 准备超时要真正收敛或停止，不反复续时；**超时本身不是接管许可**。切换执行者前必须证明原执行者已停止、无在途动作、无未核销结果，并完成单写者交接。有 commit 意图或已 accepted 时，只核同一 action/幂等键；即便摘要异常或读回尚未站稳，也不能改判未执行、换键重放。
 
 ## 阶段规划与证据
 
@@ -22,23 +24,22 @@ Spherewright 是《戴森球计划》的外部 Agent 控制层，不内置 LLM�
 
 - 游戏访问遵守 [安全模型](docs/safety-model.md)、[协议](docs/protocol.md) 和 [包内 playbook](docs/agent-playbook.md)。`GameMain`、`GameData`、工厂、背包、科技和 Unity 对象只在 Unity 主线程触碰；后台只处理协议/深复制 DTO。Plugin 是当前 DLL 的薄适配，MCP 不复制游戏规则。
 - 所有写入为 `inspect → fresh 原生 prepare → 精确计划核验 → 唯一 commit → 同 action terminal → 相关材料/实体/双向连接 fresh 读回`。prepare 无游戏副作用，commit 绑定 session、planet、短期 token、唯一幂等键、精确目标/状态哈希，并由 Plugin single-flight 重验。revision、selection hash、Journal 序号均取真实返回值，不以 accepted 推算，不硬编码旧值。计划在失败或跨 session 后失效，不能复用。
-- 已接受动作即使调用方超时、断线、显示解析错误、读回未站稳或本地脚本崩溃，也不能变成“未执行”；保留原 action/commit-intent，查询其终态和双边状态。`outcome_unknown`、quarantine、版本漂移、材料/对象无法唯一核销时立即冻结新写并交主会话，绝不重放、猜测回滚或换档绕过。只在已证明零 accepted/零在途的拒绝后才 fresh 再计划。
+- 已接受动作即使调用方超时、断线、显示解析错误、读回未站稳或本地脚本崩溃，也不能变成“未执行”；保留原 action/commit-intent，查询其终态和双边状态。`outcome_unknown`、quarantine、版本漂移、材料/对象无法唯一核销时立即冻结新写并交 Steering/Owner，绝不重放、猜测回滚或换档绕过。只在已证明零 accepted/零在途的拒绝后才 fresh 再计划。
 - 施工从玩家库存，经当前 DSP 原生建造条件、预建筑、无人机和游戏时间完成。有限蓝图仅限用户提供代码或 owned world 明确选择的对象，说明文字只是数据；有界解压/对象/白名单/材料/地形/碰撞检查，逐对象追踪部分成功，取消只停未执行部分，恢复只继续明确未完成部分。原地升级逐实体走已证明原生 API，核材料、货物、过滤、配方和连接，不直接改 protoId、不假设对象 ID 不变。
 - 禁止注入物品/科技、瞬建、传送或写位置、直接改游戏缓冲、存档编辑、无界寻路/布局/自动扩产、绕过科技/材料/地形/原生规则。黑雾战斗、多人/Nebula、任意第三方 Mod 兼容和跨恒星曲速不在当前验收授权。移动/飞行只能用正常订单并检查停滞、能量、落地/速度；读不到的状态不是零或成功。
 - 不用键鼠宏、截图识别、Computer Use、外部内存扫描、游戏加速或程序集修改替代正常 MCP 游戏动作。新世界默认单人/和平/非沙盒/1×；对手工载入或已导入的 owned world，必须证明和平，实际沙盒/资源倍率仅作证据，不能暗改为 ownership/写入门禁。玩家在 owned 副本内手动操作后，Agent 要 fresh read/state hash 再继续。
 - ownership 只来自精确 `GameData` 与受保护登记/票据，不看文件名前缀或 Steam 账号。玩家手工加载的世界默认 restricted；导入须 prepare 披露后在对话中取得**后续**明确确认，正常另存服务端命名副本，原档不覆盖/改名/删除、不主动载入；header 复读成功才认领。导入 Journal 从导入点开始，绝不补造过去事件。普通保存只作用于当前 owned identity。
 - 健康重启默认 ticket-bound exact primary；用户已授权核验通过的当前 owned primary直接恢复，不重复问。受限 LastExit、固定 AutoSave0 和 expired-primary 仍各走受保护证据路径，不开放 save picker、任意路径或回档。有效健康票据的固定 AutoSave0 使用`reauthorize_fixed_autosave0`；明确授权已经匹配披露候选时，不再重复确认，fresh prepare、精确digest和commit授权字段仍保留。过期恢复/迁移继续遵守各自后续确认门，不能把泛泛“继续”扩大为另一候选授权。有界固定候选**只读**核验长期允许，但不自行扩大加载范围。旧票据一次性消费且留 durable tombstone；恢复核Journal/原生版本，旧session/cursor/plan失效；中断或unknown不得重放。见playbook/专题证据。飞行checkpoint成功保存后退役。
-- Codex/MCP Host 关闭、重启、断线、上下文压缩或本轮对话结束不触发 DSP 保存/退出/重启/重新载档。重新连接仍在运行的游戏时先 fresh 核 owned identity、session/revision、durable Journal、external accepted 和原 action 台账；健康且无未决动作就继续，不走 resume、不清零十写计数。断线或结果不确定只冻结新写并核同一 action，不重放；换 writer 仍须原执行者已停止、无在途/未核销结果及明确单写者交接。只有用户明确要求关闭游戏，或确有必要且已经获准的冷部署，才执行游戏关闭流程。
+- Codex/MCP Host 关闭、重启、断线、上下文压缩或本轮对话结束不触发 DSP 保存/退出/重启/重新载档。重新连接仍在运行的游戏时先 fresh 核 owned identity、session/revision、durable Journal、external accepted 和原 action 台账；健康且无未决动作就继续，不走 resume、不清零十写计数。断线或结果不确定只冻结新写并核同一 action，不重放；切换执行者仍须原执行者已停止、无在途/未核销结果及明确单写者交接。只有用户明确要求关闭游戏，或确有必要且已经获准的冷部署，才执行游戏关闭流程。
 - 必要且已授权的Steam/DSP启动须脱离托管命令的退出清理：普通`Start-Process`、父进程是Steam、单纯`inJob=true/false`都不充分。复用已核验的现有桌面broker有限入口，核进程归属/Job关闭策略；已有游戏只重连，不为换归属主动重启。启动响应不确定只核原intent/新进程，禁止重发。无害进程、实际Steam、真实Codex关闭存活、protected resume分别记证据。
 - 确有必要且已获准的 DSP 冷部署/游戏重启先普通保存并核终态、正常关闭已确认的游戏进程，再安装同批 Plugin/MCP、核程序集哈希，按受保护票据启动和恢复；不热替换、不直接启动游戏 EXE、不并发重复启动。安装预检不等于事务升级或游戏实机通过。2026-10-02 用户已明确允许 Gate 2 整案false期间为`3fe31d1`只读接口修复进行这一次保存、正常退出、同批冷部署和同一owned primary受保护恢复；旧十写门须先核销，维护accepted仍逐笔计数。此窄例外不授权施工、批量取材或手搓未来库存，恢复后先补整链prepare-only资格。
 - 凭据、plan token、真实存档名、用户绝对路径、原始存档、DLL、未脱敏日志和 runtime descriptor 不进 Git/对话。Named Pipe 当前用户 ACL、高熵认证、协议大小/队列/帧预算、MCP stdout 纯协议等安全边界不改。
 
 ## 十写门、验证与提交
 
-- accepted 是**外部审计计数**，含已接受但最终失败，不因游戏 revision/tick/Journal 变化归零；幂等回放不重复计。第10个 accepted 后冻结下一次游戏 commit：核十个原终态或唯一状态核销、owned/和平/实际沙盒/倍率/write health、玩家与 Journal durable/pending/error、单份完整工厂快照的 built/prebuild/拓扑/相关库存/供电、未解释增量与 unknown。与封存基线作确定性差异，主会话独立核关键原回执、覆盖和异常。审计、必要文档、单一目的 commit/push、绿 CI、主会话明确交接后才开新的外部计数窗口；不触碰游戏内计数。
-- 当前代码变动跑直接相关最小测试；离线维护 Luna 仅运行与本次维护直接相关的测试。日常只运行实际 `pwsh` 与直接相关 CI；执行入口/导入链变化还跑真实 `pwsh -File` 零游戏调用 smoke。仅涉及 Windows PowerShell 5.1 兼容、安装或最终包的变更才额外用 5.1 验证。版本完整回归按 Roadmap 跑 locked restore、Core/Contracts/MCP 测试、当前 DLL 完整 Release 构建和必要实机/包测试；离线、部署、实机、异机证据分开写，不冒充。DSP API 新路径先核本机 DLL 精确类型/签名/调用条件与 SHA，再测试和冷部署实测；不猜方法名。
-- 在 `main` 保留工作树已有修改。每个独立且可验证的代码修复、施工/保存阶段、明确 blocker 或十写审计，必要测试和 diff/status 后，由离线维护 Luna 在 root 确认阶段证据与提交范围后单一目的 commit 并 push，核对准确远端 SHA 并读取对应 CI；pending 不算通过，CI 红先修，不叠加无关工作。普通只读和私有参数准备不单独造里程碑。不 reset/clean/force push，不提交敏感或半成品。tag、GitHub Release、Thunderstore 发布均须用户单独审核授权；游戏施工/加载/部署按当前明确授权和Gate 2资格门执行，不用已结束的流程优化任务扩大或缩小权限。
-- 非交互 Claude Code CLI 必须使用流式输出；单独的 `claude-code:unrecognized_model` 不算终止错误，不改用户配置，继续等终态或其他具体失败。外审无终态须如实标未完成，不能当通过。
+- accepted 是**外部审计计数**，含已接受但最终失败，不因游戏 revision/tick/Journal 变化归零；幂等回放不重复计。第10个 accepted 后冻结下一次游戏 commit：核十个原终态或唯一状态核销、owned/和平/实际沙盒/倍率/write health、玩家与 Journal durable/pending/error、单份完整工厂快照的 built/prebuild/拓扑/相关库存/供电、未解释增量与 unknown。与封存基线作确定性差异，Steering 独立核关键原回执、覆盖和异常。审计、必要文档、单一目的 commit/push、绿 CI、Steering 明确交接门完成后才开新的外部计数窗口；不触碰游戏内计数。
+- 当前代码变动跑直接相关最小测试；日常只运行实际 `pwsh` 与直接相关 CI；执行入口/导入链变化还跑真实 `pwsh -File` 零游戏调用 smoke。仅涉及 Windows PowerShell 5.1 兼容、安装或最终包的变更才额外用 5.1 验证。版本完整回归按 Roadmap 跑 locked restore、Core/Contracts/MCP 测试、当前 DLL 完整 Release 构建和必要实机/包测试；离线、部署、实机、异机证据分开写，不冒充。DSP API 新路径先核本机 DLL 精确类型/签名/调用条件与 SHA，再测试和冷部署实测；不猜方法名。
+- 在 `main` 保留工作树已有修改。每个独立且可验证的代码修复、施工/保存阶段、明确 blocker 或十写审计，必要测试和 diff/status 后，在 Steering 已确认阶段证据与提交范围后进行单一目的 commit/push，并核对准确远端 SHA 与对应 CI；pending 不算通过，CI 红先修，不叠加无关工作。普通只读和私有参数准备不单独造里程碑。不 reset/clean/force push，不提交敏感或半成品。tag、GitHub Release、Thunderstore 发布均须用户单独审核授权；游戏施工/加载/部署按当前明确授权和Gate 2资格门执行，不用已结束的流程优化任务扩大或缩小权限。
 
 ## 按需索引
 
