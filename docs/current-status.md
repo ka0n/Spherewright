@@ -13,6 +13,12 @@ Neither setting grants ownership. `OwnedBySpherewright` remains false; reads nev
 
 Normal unowned Save targets the current native save identity without import, adoption, an owned copy, or a protected resume ticket. Unowned interplanetary flight creates no Spherewright FlightCheckpoint. Finite unowned blueprint progress is bound to the current session and process, and is discarded after replacement or restart. Public blueprint inspection/export, protected Journal, Governor, Save Import, Owned Resume, and checkpoint reload retain their separate ownership and provenance requirements.
 
+## BlueprintTweaks v4 parser live acceptance
+
+Source `c51589d4b1438477288240e4bdc3b8da0f423030` was packaged and cold-deployed as the five-file `0.4.0` runtime, then exercised in the exact current authorized observed-unowned session on DSP `0.10.35.29104`. The user-provided one-Tesla-tower BlueprintTweaks v4 code passed `prepare_blueprint_build` with native placement `Ok`, no blockers and no `blueprint_trailing_data` error. A subsequent single finite commit completed normally as entity `1475`, consuming exactly one Tesla Tower (`51 -> 50`); fresh build/session readback remained healthy with no quarantine or blockers.
+
+This proves the bounded live parse/prepare/commit/completion path for that exact verified trailer. It does not prove broader BlueprintTweaks variants or persistence across save/restart: no save or restart followed the build. See [the live acceptance record](evidence/2026-10-05/blueprint-tweaks-v4-parser-live-acceptance.md).
+
 ## Material inventory cuts
 
 `spherewright_inspect_factory_entity` optionally accepts `materialInventoryObjectIds`: at most 256 unique positive built-object IDs in the current local factory. It uses the same public rich-read policy as factory inspection: owned, or exact observed-unowned with rich reads enabled. Normal write authorization alone does not make the public query readable.
@@ -21,7 +27,7 @@ A cut captures selected buffers and complete identity-verified native cargo path
 
 ## Validation and remaining boundaries
 
-Offline validation covers the read/write authority split, exact-session gates, protected provenance, material-cut budgets and duplicate-cargo rejection, and the existing Contracts, Core, MCP, and offline client checks. Local build and test results do not establish Unity behavior or live recovery for this combined source. The integration has no new deployment or live acceptance claim.
+Offline validation covers the read/write authority split, exact-session gates, protected provenance, material-cut budgets and duplicate-cargo rejection, and the existing Contracts, Core, MCP, and offline client checks. Source `c51589d4b1438477288240e4bdc3b8da0f423030` additionally has the bounded BlueprintTweaks v4 live acceptance above; that evidence does not establish save/restart persistence or complete Foundry/Governor acceptance.
 
 Broader sustained-supply and finite-buffer exclusion, complete Foundry/Governor acceptance, departure preparation, and cross-computer package validation remain separate gates in [ROADMAP.md](../ROADMAP.md). Ordinary materials, native construction, fresh prepare/commit, single-flight, idempotency, terminal observation, and unknown-outcome quarantine remain mandatory.
 
