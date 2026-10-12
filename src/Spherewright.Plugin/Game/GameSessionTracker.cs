@@ -191,6 +191,7 @@ internal sealed partial class GameSessionTracker : IDisposable
                     CancelExpectedResumedSession();
                 }
                 _observedData = null;
+                PassiveDriftMoveInspections.Clear();
                 _ownedData = null;
                 _ownedSaveName = null;
                 _sessionId = null;
@@ -222,6 +223,7 @@ internal sealed partial class GameSessionTracker : IDisposable
                 _resumeAdoptionError = rejection;
             }
             _observedData = currentData;
+            PassiveDriftMoveInspections.Clear();
             _sessionId = Guid.NewGuid().ToString("D");
             ConfirmedPlannedResumeMinimumGameTick = null;
             _revision = 1;

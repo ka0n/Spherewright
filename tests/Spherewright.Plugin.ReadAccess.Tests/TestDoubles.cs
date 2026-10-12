@@ -256,12 +256,17 @@ public sealed class GameDesc
 
 public sealed class PlanetData
 {
+    public int factoryIndex { get; set; }
+    public bool factoryLoaded { get; set; }
+    public PlanetFactory? factory { get; set; }
     public int id { get; set; }
     public string displayName { get; set; } = "Test Planet";
 }
 
 public sealed class PlanetFactory
 {
+    public int index { get; set; }
+    public PlanetData? planet { get; set; }
     public int planetId { get; set; }
     public int entityCursor { get; set; } = 3;
     public int prebuildCursor { get; set; } = 1;
@@ -269,6 +274,8 @@ public sealed class PlanetFactory
 
 public sealed class GameData
 {
+    public int factoryCount { get; set; }
+    public PlanetFactory[]? factories { get; set; }
     public string gameName { get; set; } = "manual-slot";
     public GameDesc? gameDesc { get; set; }
     public PlanetData? localPlanet { get; set; }
@@ -277,6 +284,7 @@ public sealed class GameData
 
 public static class GameMain
 {
+    public static StarData? localStar { get; set; }
     public static GameData? data { get; set; }
     public static PlanetData? localPlanet { get; set; }
     public static long gameTick { get; set; }

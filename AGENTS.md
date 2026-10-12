@@ -4,6 +4,8 @@ Spherewright 是《戴森球计划》的外部 Agent 控制层，不内置 LLM�
 
 ## Fork-Steuerung（ka0n/Spherewright）
 
+- Source-only integration uses the explicitly pinned upstream commit, an isolated worktree and ancestry-preserving merge. Keep current-status as fork provenance; imported upstream live evidence and author-specific deployment/window approvals confer no fork authority. Shared Passive-Drift evidence retains exact world/session/planet, hash and original expiry bindings across the two separate readers. Script audit-window defaults remain ten; larger explicit windows require separate Steering authorization.
+
 - Steering 决定 scope、架构、授权边界与下一步；Execution-Chats 或 Codex 可在已批准范围内直接使用当前可用工具执行任务，不要求特定模型、Agent、Luna、root/writer 角色或上游内部委派结构。
 - 工具与 Agent 的选择不由 `AvaloNero/Spherewright` 的内部工作流规定。若继承的工作流/Agent 组织规则与 `ka0n/Spherewright` 的明确 Steering-/Owner-决定冲突，以当前 Steering-/Owner-决定为准。
 - 本文件其余技术 Safety、协议、所有权、保存/恢复、部署、幂等、审计和测试约束仍然具有约束力；上述 fork 规则不得被解释为放宽任何游戏或运行时安全边界。
@@ -35,7 +37,7 @@ Spherewright 是《戴森球计划》的外部 Agent 控制层，不内置 LLM�
 - 确有必要且已获准的 DSP 冷部署/游戏重启先普通保存并核终态、正常关闭已确认的游戏进程，再安装同批 Plugin/MCP、核程序集哈希，按受保护票据启动和恢复；不热替换、不直接启动游戏 EXE、不并发重复启动。安装预检不等于事务升级或游戏实机通过。任何一次性历史部署/重启授权均不得视为当前可重放授权；每次仍须依据当前 Steering-/Owner-批准和现行技术门执行。
 - 凭据、plan token、真实存档名、用户绝对路径、原始存档、DLL、未脱敏日志和 runtime descriptor 不进 Git/对话。Named Pipe 当前用户 ACL、高熵认证、协议大小/队列/帧预算、MCP stdout 纯协议等安全边界不改。
 
-## 十写门、验证与提交
+## 写入窗口、验证与提交
 
 - accepted 是**外部审计计数**，含已接受但最终失败，不因游戏 revision/tick/Journal 变化归零；幂等回放不重复计。第10个 accepted 后冻结下一次游戏 commit：核十个原终态或唯一状态核销、当前 session 与实际 normal-action authority（owned 或明确授权的 exact unowned）、Combat posture 与 aggressiveness telemetry、实际沙盒/倍率/write health、玩家与 Journal durable/pending/error、单份完整工厂快照的 built/prebuild/拓扑/相关库存/供电、未解释增量与 unknown。与封存基线作确定性差异，Steering 独立核关键原回执、覆盖和异常。审计、必要文档、单一目的 commit/push、绿 CI、Steering 明确交接门完成后才开新的外部计数窗口；不触碰游戏内计数。
 - 当前代码变动跑直接相关最小测试；日常只运行实际 `pwsh` 与直接相关 CI；执行入口/导入链变化还跑真实 `pwsh -File` 零游戏调用 smoke。仅涉及 Windows PowerShell 5.1 兼容、安装或最终包的变更才额外用 5.1 验证。版本完整回归按 Roadmap 跑 locked restore、Core/Contracts/MCP 测试、当前 DLL 完整 Release 构建和必要实机/包测试；离线、部署、实机、异机证据分开写，不冒充。DSP API 新路径先核本机 DLL 精确类型/签名/调用条件与 SHA，再测试和冷部署实测；不猜方法名。

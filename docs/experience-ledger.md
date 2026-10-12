@@ -1,6 +1,20 @@
 # Spherewright experience ledger
 
-更新时间：2026-10-03（Asia/Singapore）
+Provenance: imported upstream world observations and execution/deployment approvals in this historical record belong to AvaloNero/Spherewright. They do not describe the fork's current loaded save and grant no fork runtime authority. Portable technical conclusions remain references; the fork's current source and runtime status are described in [current-status.md](current-status.md).
+
+更新时间：2026-10-09（Asia/Singapore）
+
+## EXP-342 — 建造后证明绑定原生后态，异常时保留隔离证据
+
+- 状态：`validated_offline_live_pending`，2026-10-09。
+- 可复用规则：空带head的prepare保持无输入；Native创建后的证明必须先核全部旧槽保全及精确negative prebuild互惠输入，再复读原路径，不能继续要求该已改变槽为空，也不能对任意输入放行。Native创建前保留不可变prepared步骤，隔离时冻结实际库存；DTO实时fallback不等于隔离时保留证据。缺记录的旧进程不能靠离线代码补填或重复未知动作；精确Native核销拒绝后仍冻结，另走已授权的受保护恢复流程。
+- 202项相关Core策略测试和本机完整Release构建通过，代码未部署/实机验证；原action仍为未知。见[本次原件、修复和恢复边界](evidence/2026-10-09/stone-return-join-quarantine-r505.md)、IFX-185。
+
+## EXP-341 — 私有nullable-array序列化保留真正空数组
+
+- 状态：`observed`，2026-10-07。
+- 可复用规则：私有PowerShell caller将可空集合序列化前，需确认空值最终是JSON空数组`[]`；`[null]`表示含一个null元素，不等于空集合。R25的本地后处理遇到该形状时应冻结后续写入并用同一action原回执及只读状态核终态；不能重发已成功动作，也不能把解析/展示故障降格成`outcome_unknown`的豁免。修正只落私有nullable-array helper，保持公共DTO、Plugin/MCP与unknown硬阻断不变。
+- 本次R25后只读证明`4d94a113b40f47fbab6c748091caf76b:6`（SHA-256 `BE00047A6B8AA973710305288458EEC11381C2715419EE8E9911DFBA554B1658`）以5次read/0写复核原两action、owned/session/Journal/player，确认仍10/10 FROZEN、无重放、unknown或计数变化。私有helper归一到`[]`后离线验证0 Game calls且unknown仍被阻断；未修改或部署Plugin/MCP。此问题不同于PowerShell管线把真正空数组折叠成null，参见[本阶段事件](evidence/2026-10-07/continuing-oil-supply.md)。
 
 ## EXP-340 — 固定调用、终态与摘要字段保持各自边界
 

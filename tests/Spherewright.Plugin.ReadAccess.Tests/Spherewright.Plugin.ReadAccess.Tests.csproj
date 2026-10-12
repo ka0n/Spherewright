@@ -12,6 +12,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\src\Spherewright.Plugin\Bootstrap\SpherewrightConfiguration.cs" Link="Production\SpherewrightConfiguration.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\GameSessionTracker.MoveInspection.cs" Link="Production\GameSessionTracker.MoveInspection.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\GameStateReader.MoveInspection.cs" Link="Production\GameStateReader.MoveInspection.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\GameStateReader.RemoteFactoryRead.cs" Link="Production\GameStateReader.RemoteFactoryRead.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\GameStateReader.FactoryPool.cs" Link="Production\GameStateReader.FactoryPool.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\NormalGameActionCoordinator.MoveInspection.cs" Link="Production\NormalGameActionCoordinator.MoveInspection.cs" />
     <Compile Include="..\..\src\Spherewright.Plugin\Game\GameSessionTracker.ReadAccess.cs" Link="Production\GameSessionTracker.ReadAccess.cs" />
     <Compile Include="..\..\src\Spherewright.Plugin\Game\GameSessionTracker.NormalActions.cs" Link="Production\GameSessionTracker.NormalActions.cs" />
     <Compile Include="..\..\src\Spherewright.Plugin\Game\GameStateReader.ReadAccess.cs" Link="Production\GameStateReader.ReadAccess.cs" />

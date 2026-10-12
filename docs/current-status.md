@@ -1,5 +1,9 @@
 # Current development status
 
+## Pinned fork integration (2026-10-12, Europe/Berlin)
+
+The isolated integration branch merges exactly upstream `8df3b7764c57cae634bab1e9762b4f116f7838ae` into fork baseline `b6b54a4ad1940911e60a62c8d589b61aa7a3f49f`. It adds shared session/world-bound Passive-Drift inspection across the separate readers, public same-star resident remote factory reads, Fuel Power State, expanded material cuts and bounded native belt segment geometry reads while preserving independent read/write authority. The full local Release Plugin build and 3,096 automated .NET tests pass; runtime, installed binaries and saves were not changed. See the [integration record](evidence/2026-10-12/fork-upstream-integration.md) for conflicts, commands, test counts and review boundaries. Upstream live observations remain historical provenance and grant no fork authority.
+
 This page describes the public development source. It is not a report of an installed Plugin, an active game session, or completed live acceptance. Consult the actual session state and the matching package before using a capability.
 
 ## Current unowned sessions
@@ -21,7 +25,7 @@ This proves the bounded live parse/prepare/commit/completion path for that exact
 
 ## Material inventory cuts
 
-`spherewright_inspect_factory_entity` optionally accepts `materialInventoryObjectIds`: at most 256 unique positive built-object IDs in the current local factory. It uses the same public rich-read policy as factory inspection: owned, or exact observed-unowned with rich reads enabled. Normal write authorization alone does not make the public query readable.
+`spherewright_inspect_factory_entity` optionally accepts `materialInventoryObjectIds`: at most 256 unique positive built-object IDs in the requested current-star readable factory. It uses the same public rich-read policy as factory inspection: owned, or exact observed-unowned with rich reads enabled. Normal write authorization alone does not make the public query readable.
 
 A cut captures selected buffers and complete identity-verified native cargo paths at one game tick. Each path and cargo stack is counted once. The existing cell, member, cargo, and object budgets remain enforced; incomplete or invalid coverage is unknown, never zero. Do not add overlapping paths, prorate a path to selected belts, or stitch cuts from different ticks. A stock observation does not prove production, flow, source allocation, sustainable supply, or balance.
 

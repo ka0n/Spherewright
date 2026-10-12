@@ -1,7 +1,73 @@
 # 存档日记 001：从落地到当前的决策、科技与首次产出
 
-更新时间：2026-10-01（Asia/Singapore）
+Provenance: imported upstream world observations and execution/deployment approvals in this historical record belong to AvaloNero/Spherewright. They do not describe the fork's current loaded save and grant no fork runtime authority. Portable technical conclusions remain references; the fork's current source and runtime status are described in [current-status.md](current-status.md).
+
+更新时间：2026-10-12（Asia/Singapore）
 公开存档 ID：`owned-world-001`（真实存档名不进入仓库）
+
+2026-10-11 — R935核销并保存固定窗口13笔accepted，退役未用7笔，fresh完整工厂封存为6492 built/0 prebuild；持续来源与整案验收仍未通过。[R935固定窗口封存与完整工厂核验](evidence/2026-10-11/saved13-window-close-r935.md)
+
+2026-10-10 — R585独立核销固定20写窗口中的10笔唯一accepted均由正常Save覆盖；全厂快照6366 built/0 prebuild，石料矿机仍未接电或开采，来源及持续供给门未通过。[R585石料路由前缀保存与固定窗口封存](evidence/2026-10-10/stone-route-prefix-save-r585.md)
+
+2026-10-10 — R577完成由6332经16条NEW带材至6318的高端双接缝Native cover；旧路径开放空载、矿机仍未接电，施工尚未由新Save覆盖。R579同scope余段正在执行。[R577高端双接缝Native核验](evidence/2026-10-10/stone-raised-dual-cover-r577.md)
+
+2026-10-10 — R569上坡写入在调用者超时后经R572查询确认同一原动作成功；R573核对上坡与预算余量。施工尚未由新Save覆盖，来源连接与持续供给仍待验。[R573上坡动作核销与余段预算](evidence/2026-10-10/stone-uphill-prefix-r573.md)
+
+2026-10-10 — R558同一原动作经只读核销为Native完成，R564完成下坡/地面接缝后R568确认13条新带材接入旧空载路径。阶段仍冻结待余段；矿机未接电，持续来源未通过。[R568下坡接入与关键接口复核](evidence/2026-10-10/stone-overpass-critical-interface-r568.md)
+
+2026-10-10 — R544完成有限取材与r84递归手搓，R546独立核验四笔accepted写入均由Save `105130853`/J102覆盖；固定20窗口新阶段external4、lifetime412并冻结。来源矿机仍未开采或接电。[R546石料有限备料与保存核销](evidence/2026-10-10/stone-finite-material-kit-r546.md)
+
+2026-10-10 — R529建成矿机后，R532/R533只读核销同一原action；R534建成两段空载出口带并保存，R536独立核销9笔写入并提前封闭固定窗口。石料仍未开采，持续来源未通过。[R536石料矿机出口与封窗核销](evidence/2026-10-10/stone-native-source-outlet-r536.md)
+
+2026-10-10 — R520的Move在预算结束前已accepted，R524只读核实同一原action成功、R525独立核销；R526普通保存至`105072201`/J102。R528只读确认group 19矿机候选有正余量，未建造或开采；持续来源仍未通过。[R528石料来源接近资格](evidence/2026-10-10/stone-source-approach-r528.md)
+
+2026-10-10 — R515完成一次普通分拣器升级并保存，R519核销两笔accepted写入；当前external4/20、lifetime403且冻结。矿源和持续供给仍未通过。[R519石料过滤分拣器与保存核销](evidence/2026-10-10/stone-filter-sorter-r519.md)
+
+2026-10-10 — 用户确认后完成固定LastExit恢复，R514核验健康P104主档保存至`104944169`/J102，external2/20、lifetime401；R508同SHA双包仅离线预检，持续供给和最终发行门仍未通过。[R514恢复与双包预检](evidence/2026-10-10/stone-fixed-recovery-r514.md)
+
+2026-10-09 — R421上调P104的1657钛矿石与916钛锭需求上限，R423独立核验后保存至`102745200`/revision101/J102，external10/20、lifetime385。只恢复需求，未证明新采矿、交货或持续供给；R389连续观察仍因33-tick缺口失败。[钛需求门槛与供给边界](evidence/2026-10-09/minimum-ti-demand-r423.md)
+
+2026-10-09 — R440独立审计80条受保护记录，统计为61次请求、4笔accepted Native写入；完成有限Warper取料与P104钛站需求调整，正常保存至`102781516`/R109/J102，external15/20、lifetime390。R438只读连续观察仍在进行，尚无产量或来源通过结论。[R440事件证据](evidence/2026-10-09/ti-warp-demand-save-r440.md)
+
+2026-10-08 — R364完成9笔材料准备并保存至`102313600/R74/J102`，R365独立核销；当前新窗口external9/20、lifetime368冻结。R359/R361仅资格化结构绕行与有界材料范围，整路尚未施工、持续供给未通过。[油路绕行材料封窗](evidence/2026-10-08/oil-detour-material-r365.md)
+
+2026-10-08 — R355核销19笔唯一动作由Save `102102186/R59/J102`覆盖，固定20窗以1个未用槽提前封闭；R356油路候选首次prepare因与对象4001重叠而拒绝，0写入、未重放。持续供需仍未通过。[R355/R356封窗与候选拒绝](evidence/2026-10-08/fixed20-window-close-r355.md)
+
+2026-10-08 — R351升级分拣器6074并保存至`102102186/R59/J102`；R353独立核销，external19/lifetime359冻结。未新建油路或证明持续供给。[油源分拣器升级](evidence/2026-10-08/oil-source-admission-r353.md)
+
+2026-10-08 — R338升级铁矿上游分拣器6274并正常保存至`101987980/R50/J102`；R340独立核销读回，外部计数13/lifetime353冻结。持续铁矿供给及共享油/石墨供需仍未通过。[铁矿上游升级](evidence/2026-10-08/iron-ore-feeder-r340.md)
+
+2026-10-08 — R334保存并独立核销铁入口升级阶段：保留原转移终态、不重放，完成r88手搓与2351 sorter升级，普通Save `101943803/R47/J102`；持续供需与36,000-tick门仍未通过。[R334铁入口升级](evidence/2026-10-08/iron-admission-upgrade-r334.md)
+
+2026-10-08 — R218独立审计通过并核销十笔成功动作及Save `100924863/R42/J100`覆盖；R215手采Iron54得10 Ore，矿机1496已回收重建但出口仍空。R219原生配方资格positive、0 accepted，未制作；铁线、共享供需与连续窗口仍未通过。[铁源回收、备料与十写封窗](evidence/2026-10-08/iron-source-recovery-ten-r218.md)
+
+2026-10-08 — R185完成G侧16带/3 sorter与R侧首12带；10笔unique intent由Save `100842338/R23/J100`覆盖，root审计为9成功、1笔已知停滞Move失败、无unknown或在途。完整快照6229 built/0 prebuild，G Native路径见到1109但持续燃烧/供给及Gate 2仍未通过。[G/R燃料接线进度与R185十写封窗](evidence/2026-10-08/fuel-coupling-ten-r185.md)
+
+2026-10-08 — R152封存十笔窗口，普通Save `100546323/R5/J100`覆盖全部十笔，P104/R5、external10冻结、lifetime290。Native读回确认P102 169个支持物料对象/156条belt/6条完整路径；下一施工候选备料65条、施工上限60条，至少5条留作库存，不需压缩上限。旧铁矿1496已耗尽，continuous credit为0、Gate 2仍未过。[共享精炼燃料耦合与物料十写封窗](evidence/2026-10-08/shared-refinery-fuel-coupling-material-ten.md)
+
+2026-10-08 — R122接通P102 Ti尾带到既有belt61并建电塔187，R124经同星飞行到P104后普通Save `100342332/R36/J100`；R127独立核对新建、飞行与保存全闭合，external5冻结、lifetime285。需求站1657短期有船有货，但连续供给credit仍为0，整案未通过。[P102 Ti源端接通与P104短期返程](evidence/2026-10-08/ti-source-powered-return.md)
+
+2026-10-08 — 上一P102封窗由R107/R112完成5条Ti源端空带，R116回收旧空分拣器并以普通Save `100241992/R27/J100`保存；R119独立审计10笔unique accepted全完成，external10冻结、lifetime280。当时新尾端185尚未接到Ti带61，矿机未通电。[P102 Ti源端五带、回收与十写封窗](evidence/2026-10-08/ti-source-five-belts-reclaim-ten.md)
+
+2026-10-08 — 上一封窗在R97正常Save `100030212/R10/J100`后独立审计10笔unique accepted全完成并冻结external10、lifetime270。同源程序集当时已冷部署，R88新建Ti矿机但source接缝尚未施工；Ti自动来源、P104远端读回和Gate 2长窗仍未通过。[P102空Ti源端维护与R97十写审计](evidence/2026-10-08/p102-empty-source-binding-maintenance.md)
+
+2026-10-08 — R74拆除新建但未接线的Ti矿机1，其缓冲有`1004×50`；正常回收`2301×1`与矿石后，完整玩家背包读回确认矿石inc0。旧footprint/yaw120候选因传送带对象7碰撞被Native拒绝，0 build commit；同族候选退役。R78普通Save `99927096/R157/J100`覆盖回收动作，R80只读复核健康、无在途/unknown；当时P102、external4/10、lifetime264，普通写冻结。该截面为历史；后续部署、重建、备料与封窗见上方最新记录。[P102空矿机源接续维护](evidence/2026-10-08/p102-empty-source-binding-maintenance.md)
+
+2026-10-08 — R64重开后R66拆旧空miner1，R71完成新miner ID1（消耗2301×1）；R73核对P102/R154、external2/lifetime262、无在途或unknown，Save仍为99724071/R150/J100且普通业务冻结。N1实际work 7000 J/t；新miner出口尚未接线，Ti自动来源、连续≥36000-tick和整体验收仍未通过。[R73 Ti矿机重建与未接通边界](evidence/2026-10-07/continuing-oil-supply.md)
+
+2026-10-07 — R33将lifetime 240推进至250，normal Save `99543357/R136/J100`封存external10/10；root十写审计核销10笔completed、0 replay/unknown/inflight/unpaired。新增sorter `6189–6197`完成18条互惠端点连接，同tick cut的11条Native路径全空；source `4450`尚未admit。后续R42 fast-sorter Native prepare positive、0 commit；source admission与持续供给尚未通过。[lifetime250主干接缝十写封窗](evidence/2026-10-07/continuing-oil-supply.md)。
+
+2026-10-07 — 上一窗R28/R28b/R29完成材料包、第二pole、dry main 21带及3条2带tap，normal Save `99483674/R117/J100`封存external10/10、lifetime240；root独立审计核销10笔completed、0 replay/unknown并确认Save覆盖全10。D族累计105条dry belt；当时full capture新增6161 pole及6162–6188的27带，same-tick cut中105条dry belt与4个既有sorter均空货。source4450未admit、continuous供给与≥36000-tick验收未通过；随后九普通接缝施工和Save封窗记录见最新截面。[lifetime240审计与dry main封窗](evidence/2026-10-07/continuing-oil-supply.md)。
+
+2026-10-07 — 本窗lifetime220→230，普通Save `99414378/R99/J100`，external10/10 FROZEN；四run紧凑索引及独立审计核销10笔completed、0 replay/unknown，Save覆盖全10。capture `440a69d54eda42c78d39995685e11e21:1–86`为6160 built/0 prebuild，较6127基线新增33个实体；same-tick cut的8条Native路径均为空货。新增三thermal实际capacity/generation为0，source4450未admit，shared supply与≥36000-tick门未通过，整案`executable=false`。R25私有nullable-array序列化问题只读核销后局部修复；下一施工仍等准确SHA绿CI及root重开。[lifetime230十写审计与返回段](evidence/2026-10-07/continuing-oil-supply.md)。
+
+2026-10-07 — 备料含从1511取出Fe112至玩家、r5×22、r84×22及Save `99037141/R45/J100`；独立十写审计 `ad29ade6e82b486bb75943d75e45a1aa:1` 通过，10笔unique completed、0 replay，Save覆盖全10。`newWriteBlocked=false`仅指已审窗口，不是新窗授权；下一窗未由root重开。全厂差异核销新增6061–6074共14项、0移除、11872连接/0非互反；玩家备料后Fe46/gear0/belt67/stone156。D族候选仍未施工或通过整链native/持续验收。[备料与审计边界](evidence/2026-10-07/continuing-oil-supply.md)。
+
+2026-10-07 — 到油后的三段有间隔600-tick窗口、28对象同tick cut及暖机后20-read复核均零写，continuous credit为0；3965/3966仍有批次输出接纳堵塞。该诊断时点的候选比较尚未结束；后续选定方案与当前未施工边界见顶部备料更新。[诊断及候选](evidence/2026-10-07/continuing-oil-supply.md)。
+
+2026-10-07 — 准确SHA CI成功并由root重开后，完成2+4条consumer延伸belt、sorter6067及5949出口6带/source sorter6074；6个accepted均完成并由正常保存98801251/R39/J100覆盖，external6/10、lifetime196。原油1007经两条完整原生货物流路径到达3964/r16 slot1，8次同tick读回观察到插入周期推进；新油路123带/2 sorters。拓扑为6060封存全厂基线加局部原件overlay，不是新的全厂捕获。首次实际到油已确认，连续供给与共享供需诊断仍待验收。[持续授权与新油源接通](evidence/2026-10-07/continuing-oil-supply.md)。
+
+2026-10-07 — 此前第二个十写窗口完成，external10/lifetime190冻结，正常保存98676748/R28/J100；独立审计6060built/0prebuild/11838互惠边、无未解释变化，油路累计111条。该封窗时只读复核6042 gap 2带、6060尾延4带与5949 outlet 6带资格；另有4个NEW belt点的3964 tokenless preview（nativeSpan2），0新增accepted，未重跑通过候选。当时sorter实体/fresh施工、5949放料、真实供油及长窗仍未证明。[持续授权与新油源接通](evidence/2026-10-07/continuing-oil-supply.md)。
 
 2026-10-01 — 紫糖供料路线十写审计完成，保存82810176/J96 durable，closing82812633/R50；accepted10/10仍FROZEN，待绿CI和root交接。三段间隔窗口的星球104原生6004生产/消耗为0/1；已确认4743缺1402，待核其上游原因。不代表连续36,000 ticks或实际重启。[紫糖供料十写审计与持续产出诊断](evidence/2026-10-01/purple-supply-ten-write-audit-and-output-diagnostic.md)。
 
@@ -5877,3 +5943,48 @@ factory23219553完整23页2267 built、0 prebuild：1883belt/202sorter/36assembl
 - 2026-10-04：1210只读采样最终取得36,101连续ticks、17件非重叠产量保守下界；粒子容器库存仍净降8，故供料/配平未闭合。正常保存至89850963/R9/J100并通过十写审计与完整快照核验；铁链分配仍待预算和fresh native资格。详见[阶段证据](evidence/2026-10-02/warper-automatic-source-and-build.md)。
 - 2026-10-04：既有peer升级与正常保存后，预声明只读连续run覆盖36,007 ticks，1210非重叠产量下界17，PC库存净增3；原窗口未采870石墨/酸、5187上游石墨或3343上游氢库存，有限库存排除仍缺证据（不表示停产），不代表Governor或全链供给通过。详见[阶段证据](evidence/2026-10-02/warper-automatic-source-and-build.md)。
 - 2026-10-04：固定32实体/15物料的连续只读采样覆盖36,125 ticks，1210非重叠产量下界16；随后22项runtime source-point reads纠正了163/784的当时库存标签（氢而非油）。原静态filter=1114路径是物料一致的候选，不证明实际油流或持续来源；有限缓存排除仍未证明。save维持89919581/R18/J100、最新观察90141554、0写入。详见[阶段证据](evidence/2026-10-02/warper-automatic-source-and-build.md)。
+- 2026-10-08：R282十笔核销及健康恢复后保存完成；铁源与全物料短窗已记录，持续供需、36,000-tick长窗和双补给仍未通过，详见[事件证据](evidence/2026-10-08/iron-routing-full-material-ten-r282.md)。
+- 2026-10-08：R303十笔已由正常保存覆盖，ILS准备与全厂/物料快照已封存；持续共享供需和36,000-tick门仍未通过，详见[事件证据](evidence/2026-10-08/departure-ils-ten-r303.md)。
+- 2026-10-08：R312十笔由保存覆盖，便携套件与铜节点变化完成封窗核销；全局供需、Rod carry和36,000-tick门仍未通过，详见[事件证据](evidence/2026-10-08/departure-small-kit-ten-r312.md)。
+- 2026-10-08：R320核销Rod carry五件与两分拣器filter恢复；共享供需、36,000-tick连续门和整合恢复仍未通过，详见[事件证据](evidence/2026-10-08/departure-rod-carry-seven-r320.md)。
+- 2026-10-08：R321只读联合观察出现24-tick间隙，未取得36,000连续ticks；R322核销continuous credit为0，详见[观察缺口事件](evidence/2026-10-08/joint-observation-gap-r321.md)。
+- 2026-10-08：R323完成36,316个连续game ticks的联合只读采样，R324核销来源条件未通过、continuous credit仍为0；详见[阶段证据](evidence/2026-10-08/joint-supply-long-window-r324.md)。
+- 2026-10-09：R438完成36090个无缺口ticks，R441核验四项计数下界与三厂电力达标、但五项库存下降超容差；R443确认有限出发清单已齐，持续来源仍未通过，详见[来源书挡与清单核对](evidence/2026-10-09/full-source-bookends-r441.md)。
+- 2026-10-09：R447回收空载耗尽的矿机86并保存；R449核验来源未恢复，R451核销原17笔并完整封窗，剩余3额度不转移，详见[石料来源检查与封窗](evidence/2026-10-09/stone-source-recovery-r449.md)。
+- 2026-10-09：R453关闭两次碰撞拒绝的旧占位候选并保留3725活线；R454加入仅离线验证的隔离空带链头原生回收适配，尚未部署或实机执行，详见[适配边界](evidence/2026-10-09/empty-belt-recovery-adapter-r454.md)。
+- 2026-10-09：R467三笔回收完成、一笔保持`outcome_unknown`并触发写隔离；R472核验未决状态，R473仅核对恢复票据一致性，恢复方案待用户选择，详见[隔离状态与恢复边界](evidence/2026-10-09/empty-belt-live-quarantine-r472.md)。
+- 2026-10-09：用户确认后，R489按固定LastExit路径恢复并以正常主档保存覆盖恢复前缀；R492独立核验通过，历史5322未知action未重放或改判成功，来源门仍未通过，详见[固定隔离恢复](evidence/2026-10-09/fixed-quarantine-recovery-r492.md)。
+- 2026-10-09：R498两段返回带的原action为`outcome_unknown`并隔离；R503独立核实建成前缀，R504/R505确认原生核销拒绝，未重放/保存/加载。相关证明修复通过202项策略测试及本机Release构建，未部署；详见[接缝未知终态与修复](evidence/2026-10-09/stone-return-join-quarantine-r505.md)。
+- 2026-10-10：R609同批部署、R602菜单检查与R611健康恢复由R605核销；被动漂移修复只对显式 opt-in 的 Move 生效，来源与36,000-tick持续供给门仍未通过，详见[恢复与状态绑定核验](evidence/2026-10-10/passive-drift-maintenance-r605.md)。
+- 2026-10-10：R618与R621完成两次有限燃料转入但尚未保存；R623通过固定北向接收端prepare-only资格，R624施工尚无终态，来源与持续供给仍未通过，详见[燃料状态与北向接收端资格](evidence/2026-10-10/finite-mecha-fuel-stationary-north-r623.md)。
+- 2026-10-10：R624完成北向五笔施工并读回105条新带材；R626核验实际空载接收路径与源头间距，矿机5325仍未供电。R627尚无终态，保存与持续供给验收仍待完成，详见[北向路线核验](evidence/2026-10-10/stationary-north-route-r626.md)。
+- 2026-10-10：R641保存并核销源端接缝与供电；R643确认一次有限石料送达87，R647完成29物料及来源审计，仍有两个矿点不可用、Rod携带需求未执行，持续供给门未通过。详见[石料接缝与来源诊断](evidence/2026-10-10/stone-source-seam-power-save-r641.md)。
+- 2026-10-10：R652移动以`position_stalled`结束；R661漂移提交在Native建动作前被`STALE_STATE`拒绝，R664只读核销本地未决。窗口仍冻结且未保存，R659/R665保留矿点可用性和来源边界，持续供给门未通过，详见[仓库返航与石料来源核验](evidence/2026-10-10/warehouse-return-recovery-r665.md)。
+- 2026-10-10：R672核销普通保存并提前封存固定窗口；全厂静态与连接保持、P104本地N1/N3/N4三个电网满供，但玩家仍处于Drift，未取得落地、仓库到达或持续供给证据。详见[仓库返航、封窗与石料来源边界](evidence/2026-10-10/warehouse-return-recovery-r665.md)。
+- 2026-10-10：R673一次漂移移动prepare收到Native `STALE_STATE`，0 accepted，并达到旧恢复候选族两次拒绝的上限；R674仅将整案保存计划上限提高到9，实际保存仍为8。新固定窗口已从lifetime434开启，来源与落地验收仍未通过，详见[仓库返航、封窗与石料来源边界](evidence/2026-10-10/warehouse-return-recovery-r665.md)。
+- 2026-10-10：R676/R677只读观察仍见Drift速度高于Native移动门；canonical hash复算仅位置变化，R673拒绝的内部Native原因仍未知，尚未观察到人工上岸停稳。详见[仓库返航、封窗与石料来源边界](evidence/2026-10-10/warehouse-return-recovery-r665.md)。
+- 2026-10-10：R681/R682完成全来源只读核验；R683进一步定位所选磁铁炉的空铁矿输入及现有铁源至铁块炉的路径，但尚未确认唯一根因或批准修复，持续供给门仍未通过。详见[全来源核验与铁源差异](evidence/2026-10-10/full-source-readiness-r682.md)。
+- 2026-10-10：R692成功完成短程Move并由R694核销；后续采煤prepare因`STALE_STATE`停止，未采煤、加燃料或保存。R697核实石矿1005增加6件；R699完成只读全厂核验，煤点未开采，库存增量来源仍待确认，写入保持冻结。[煤矿接近与库存变化观察](evidence/2026-10-10/coal-fuel-approach-state-change-r697.md)
+- 2026-10-11：R953修正Stone转移ACK计数及Native顺序库存读回误停，R954另一Move以`position_stalled`结束；R960普通保存、R961独立核验覆盖当前7/20窗口动作。R962记录R941至R960跨段跨度38.06分钟、六个列出caller合计36.37秒；两者口径不同且非完整调用清单，异常处理与交接仍消耗壁钟，不能据局部审计提速宣称端到端提速。来源与整案连续供给门仍未通过，详见[阶段证据](evidence/2026-10-11/recent-flow-and-caller-recovery-r953.md)。
+- 2026-10-11：R971完成Warp转入和短程逃离Move，下一涉水目标在commit前被本地拒绝且未重试；R976普通保存、R977独立核验覆盖成功前缀，当前窗口仍冻结开放10/20，来源与连续供给门未过。[Warp补给、受限移动与保存核验](evidence/2026-10-11/warp-escape-save-r977.md)
+- 2026-10-11：R988将144件物料1108转入断开仓773并完成普通保存；fixed-20窗口维持12/20且冻结。R981短窗观察到Rod与Warp库存产出受阻，但来源及整案持续供给门仍未通过。[Rod容量与保管转存核验](evidence/2026-10-11/rod-capacity-custody-r988.md)
+- 2026-10-11：R991–R997完成一段北向Move并由普通保存覆盖；第二段因12个岸线风险样本未提交，原余量退役。来源、连续供给与最终候选门仍未通过，详见[阶段证据](evidence/2026-10-11/northern-prefix-flow-r997.md)。
+- 2026-10-11：R1013以17/20提前封窗，保存覆盖全部动作；一段accepted Move以native_move_stalled结束并核销，余3槽退役。完整快照和库存保全通过，但来源及wholeSupply门仍未通过，详见[阶段证据](evidence/2026-10-11/saved17-flow-r1013.md)。
+- 2026-10-11：R1027完成两次成功Move与覆盖保存；第三段虽prepare为positive，但5个岸线风险样本触发精确策略拒绝，未commit，余下3项预算退役。来源与wholeSupply门仍未通过，详见[阶段证据](evidence/2026-10-11/row-skirt-prefix-r1027.md)。
+- 2026-10-11：R1038核销一笔已接受但以`position_stalled`终止的Move，并由普通保存覆盖；固定20窗口维持5/20且冻结，余下3个本目的预算槽位退役。来源与wholeSupply门仍未通过，详见[阶段证据](evidence/2026-10-11/south-turn-stall-save-r1038.md)。
+- 2026-10-11：R1046完成一段短程Move并由普通保存覆盖；第二目标虽通过Native prepare，但岸线风险门阻止commit，未accepted。窗口为7/20且仍冻结，来源与wholeSupply门未通过，详见[东北路线前缀与保存](evidence/2026-10-11/northeast-prefix-save-r1046.md)。
+- 2026-10-11：R1055完成两次短程Move并由普通保存覆盖；第三目标虽通过Native prepare，但岸线风险门阻止commit，未accepted。窗口为10/20且仍冻结，来源与wholeSupply门未通过，详见[东北两段移动与保存](evidence/2026-10-11/northern-two-move-save-r1055.md)。
+- 2026-10-11：R1062从Rod仓转出400件并由普通保存覆盖；R1065短窗观测到Rod净增量，但Warp与钛源输出仍为零，不能据此判持续供给通过。窗口为13/20且仍开放冻结，详见[Rod转存与来源短窗](evidence/2026-10-11/upper-bank-rod400-save-source-r1065.md)。
+- 2026-10-11：R1072 将400根Rod转存、取出600个Warp并保存；R1075短窗观察到Warp 6/min、Rod与钛源输出为零，未证明持续来源。固定窗口为16/20且仍开放冻结，详见[库存转存与来源短窗](evidence/2026-10-11/owned-stock-warp-demand-save-r1075.md)。
+- 2026-10-11：R1088独立核销并封闭旧16/20窗口，未用4槽退役；R1089新20窗口以0/20冻结开启。R1085定位到磁铁炉铁源路径，但Warp上游铁路仍为空，持续来源门未通过，详见[共享氘支路、铁源缺口与封窗](evidence/2026-10-11/shared-deuterium-iron-gap-window-close-r1088.md)。
+- 2026-10-11：R1094以一次Move、仓28转出200铁块（1101）及普通保存完成有限备料；调用器末尾字段解析报错由独立原件核验纠正，动作未重放。当前窗口3/20且冻结，source/wholeSupply仍未通过，详见[有限铁块备料与保存](evidence/2026-10-11/finite-iron200-kit-saved-flow-r1094.md)。
+- 2026-10-11：R1099制作传送带150并完成普通保存，固定窗口为5/20且冻结；来源与整案持续供给门仍未通过，详见[有限传送带备料与保存](evidence/2026-10-11/finite-belt150-kit-saved-r1099.md)。
+- 2026-10-11：R1109完成29m正常接近Move并由普通保存覆盖，到达误差为0.0362m；此前R1106已资格化1501过滤分拣短端预览，完整源路线仍未通过或施工。窗口为7/20且冻结，详见[正常接近与短端资格](evidence/2026-10-11/finite-iron-route-approach-saved-r1109.md)。
+- 2026-10-11：R1112/R1114确认直连布局在第15个原生点遇到既有硅矿路径对象1868；R1116朝向保护及R1117/R1119与1213、6492的端点重叠均在Native调用前停止（`NativeCheckPerformed=false`），不记作Native结果，末端D未尝试。6477侧向接入候选族已停止，下一步检查同路径235内部带。近期批准到首个Game请求样本从86.505秒到31.956秒不证明整体提速；清理250项过期内存暂存变量后，下一次root审计为4.724秒，但内存压力因果未证。保存与7/20窗口未变，详见[铁源硅线障碍与流程计时](evidence/2026-10-11/iron-route-existing-silicon-barrier-r1114.md)。
+- 2026-10-12：R1123完成正常8m接近Move与普通保存；R1125对内部铁源坡道source `6480` 和destination `1501` 的端点Native资格均为 `Ok/span2`，尚未施工，实际新接缝仍待资格。R1116/R1117/R1119的调用前保护仍不计作Native结果，`6477`侧向候选族保持停止。近期Move/保存审计为亚秒级，而完整坡道审计仍有波动；清理内存暂存后的因果及整体提速均未证明。来源与持续供需门未通过，详见[内部铁源坡道资格与流程计时](evidence/2026-10-12/iron-interior-ramp-qualification-r1125.md)。
+- 2026-10-12：R1171–R1175完成必要同批冷部署、普通保存闭合与同 owned 健康恢复；R1176/R1177在冻结布局上完成只读几何勘探，四条铁源路线均未过组合本地守卫，未运行整路线 Native 预览，也未批准施工。窗口12/20、lifetime547；来源和持续供給门仍未通过，详见[铁源多路线 Native 几何勘探](evidence/2026-10-12/iron-multi-route-native-geometry-survey-r1176.md)。
+- 2026-10-12：R1182/R1183在冻结几何上复核高架下穿与接缝能力；当前候选仍有带体/包络风险，且普通高架接口只支持单一自由端跨度，尚无可执行的多段连续施工方案。没有新游戏写入或完整 Native 路线预览，详见[高架下穿与接缝能力复核](evidence/2026-10-12/iron-raised-underpass-and-seam-capability-r1183.md)。
+
+2026-10-12 — R1186批量72模型仍无候选；R1187接口模式错误经原件独立核验修正，R1188取得五段97个完整生成点但点79与旧带5071重合，在pre-Native守卫停止，完整Native条件检查0次。勘测0写/0accepted/0Save、窗口12/20冻结。必要原生点列批量读取仅为源码准备，尚未部署或施工。[R1188生成点列与批量读取准备](evidence/2026-10-12/iron-native-grid-point-generation-and-batch-reader-r1189.md)
+
+- 2026-10-12：R1190–R1195维护动作已由普通保存和独立核验闭合；R1196–R1197只读路线勘探无写入，A/B/C候选均未通过几何守卫，完整 Native 路径检查为0，来源与持续供给仍未通过，详见[原生网格路线批量读取与障碍勘探](evidence/2026-10-12/iron-native-grid-batch-live-and-maintenance-r1197.md)。

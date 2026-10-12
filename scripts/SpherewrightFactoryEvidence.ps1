@@ -1,11 +1,60 @@
-# Pure derived views of explicitly supplied immutable pages; no game/file access.
+# Derived views of explicit immutable pages, plus exact local receipt reads.
+# Importing this file makes zero requests and performs no file access.
 Set-StrictMode -Version Latest
 $script:swFactoryStatic = @('objectId','itemId','objectKind','componentKind','position','rotation','connections','recipeId','forceAccelerationMode','filterItemId','storageConfiguration','powerNetworkId','resourceNodeIds','pickTargetObjectId','insertTargetObjectId')
 $script:swFactoryDynamic = @('isWorking','progress','progressRequired','powerDemandPerTick','powerServeRatio','buffers','tankFluidCount','beltCargo','inserterStage','inserterStackCount','requiredBuildItemCount','constructionProgress','sorterEndpoints')
-$script:swFactoryMetadata = @('sessionId','planetId','name','recipeName','filterItemName','capturedAtGameTick','stateHash','stateHashVersion','configurationStateHash','configurationStateHashVersion','endpointStateHash','endpointStateHashVersion')
+$script:swFactoryMetadata = @('sessionId','planetId','name','recipeName','filterItemName','capturedAtGameTick','stateHash','stateHashVersion','configurationStateHash','configurationStateHashVersion','endpointStateHash','endpointStateHashVersion','materialInventoryCut','fuelPowerState','geometryCut')
 $script:swStationStatic = @('planetId','entityId','stationId','galacticStationId','buildingItemId','position','isInterstellar','isCollector','isVeinCollector','powerNetworkId','energyCapacity','maximumChargeEnergyPerTick','maximumChargePowerWatts','warperCapacity','droneCapacity','vesselCapacity','droneTripRangeRaw','vesselTripRangeRaw','includeOrbitCollectors','warpEnableDistanceRaw','warpersRequired','droneDeliverySetting','vesselDeliverySetting','pilerCount','droneAutoReplenish','vesselAutoReplenish','remoteGroupMask','remoteRoutePriority')
 $script:swStationDynamic = @('powerServeRatio','energy','requestedChargeEnergyPerTick','requestedChargePowerWatts','warperCount','idleDroneCount','workingDroneCount','idleVesselCount','workingVesselCount','neededItemIds')
 $script:swStationMetadata = @('sessionId','buildingName','capturedAtGameTick','stateHash','stateHashVersion','configurationStateHash','configurationStateHashVersion','fleetStateHash','fleetStateHashVersion')
+
+function Read-SpherewrightEvidenceRecord {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$EvidenceDirectory,
+        [Parameter(Mandatory)][ValidatePattern('^(action|resume)-[0-9a-f]{32}-[0-9]{4,}-[A-Za-z0-9_-]+\.json$')][string]$RecordName,
+        [ValidatePattern('^[0-9a-fA-F]{64}$')][string]$ExpectedSha256
+    )
+    # Read ONE named original, not the directory history. Keep this raw object
+    # in local/protected comparisons; do not emit it into chat or commit it.
+    # This is not complete action coverage, independent sign-off or fresh state.
+    if ($RecordName -cnotmatch '^(action|resume)-([0-9a-f]{32})-([0-9]{4,})-([A-Za-z0-9_-]+)\.json$') { throw 'Invalid exact evidence record name.' }
+    $family = $Matches[1]; $runId = $Matches[2]; $recordType = $Matches[4]
+    $directory = Get-Item -LiteralPath $EvidenceDirectory -ErrorAction Stop
+    if ($directory -isnot [IO.DirectoryInfo]) { throw 'An explicit local evidence directory is required.' }
+    $file = Get-Item -LiteralPath (Join-Path $directory.FullName $RecordName) -ErrorAction Stop
+    if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'A regular evidence file is required.' }
+    if ($file.Length -gt 8388608) { throw 'The named evidence record exceeds the 8 MiB read budget.' }
+    # Hash and parse the same bounded bytes; do not reopen after a hash check.
+    $stream = [IO.File]::Open($file.FullName, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::Read)
+    try {
+        if ($stream.Length -gt 8388608) { throw 'The named evidence record exceeds the 8 MiB read budget.' }
+        $bytes = [byte[]]::new([int]$stream.Length)
+        $offset = 0
+        while ($offset -lt $bytes.Length) {
+            $read = $stream.Read($bytes, $offset, $bytes.Length - $offset)
+            if ($read -eq 0) { throw 'The named evidence record is incomplete.' }
+            $offset += $read
+        }
+    } finally { $stream.Dispose() }
+    if ($ExpectedSha256) {
+        $hasher = [Security.Cryptography.SHA256]::Create()
+        try { $hash = ([BitConverter]::ToString($hasher.ComputeHash($bytes))).Replace('-', '') }
+        finally { $hasher.Dispose() }
+        if ($hash -ine $ExpectedSha256) { throw 'The named evidence record hash does not match.' }
+    }
+    $encoding = [Text.UTF8Encoding]::new($false, $true)
+    $record = $encoding.GetString($bytes).TrimStart([char]0xFEFF) | ConvertFrom-Json -ErrorAction Stop
+    foreach ($field in @('runId','ordinal','recordType','payload')) {
+        if ($null -eq $record -or $null -eq $record.PSObject.Properties[$field] -or $null -eq $record.$field) { throw "Evidence record field missing: $field" }
+    }
+    if (($record.ordinal -isnot [int] -and $record.ordinal -isnot [long]) -or $record.ordinal -lt 0 -or $record.ordinal -gt [int]::MaxValue -or
+        $record.runId -cne $runId -or $record.recordType -cne $recordType -or
+        $RecordName -cne ('{0}-{1}-{2:D4}-{3}.json' -f $family, $runId, [int]$record.ordinal, $record.recordType)) {
+        throw 'The named evidence record identity does not match its filename.'
+    }
+    return $record
+}
 
 function ConvertTo-SpherewrightEvidenceJson($Value) {
     ConvertTo-Json -InputObject $Value -Depth 30 -Compress
@@ -48,6 +97,28 @@ function New-SpherewrightFactoryEvidenceView {
                 $entity.capturedAtGameTick -ne $first.capturedAtGameTick) { throw 'Duplicate/mixed entity identity.' }
             foreach ($field in @('position','rotation','connections','resourceNodeIds','buffers')) {
                 if ($null -eq $entity.PSObject.Properties[$field] -or $null -eq $entity.$field) { throw "Required snapshot observation unknown: $field" }
+            }
+            # The shared native DTO carries this optional wrapper on ordinary rows.
+            # Only a null placeholder is row metadata: never silently discard a
+            # populated selected-stock/cargo cut or mistake it for a factory page.
+            $materialCut = $entity.PSObject.Properties['materialInventoryCut']
+            if ($null -ne $materialCut -and $null -ne $materialCut.Value) {
+                throw 'Populated materialInventoryCut is not an immutable factory entity row.'
+            }
+            # Current native list rows carry a null detail-only fuel placeholder.
+            # A populated detail observation requires its own evidence scope;
+            # it must never disappear from a factory comparison silently.
+            $fuelState = $entity.PSObject.Properties['fuelPowerState']
+            if ($null -ne $fuelState -and $null -ne $fuelState.Value) {
+                throw 'Populated fuelPowerState is not an immutable factory entity row.'
+            }
+            # The geometry detail endpoint shares the native entity DTO. Only
+            # its null placeholder belongs to an ordinary immutable list row.
+            # A populated cut has separate hash/coverage/terrain semantics and
+            # must not disappear from a factory projection silently.
+            $geometryCut = $entity.PSObject.Properties['geometryCut']
+            if ($null -ne $geometryCut -and $null -ne $geometryCut.Value) {
+                throw 'Populated geometryCut is not an immutable factory entity row.'
             }
             $known = $script:swFactoryStatic + $script:swFactoryDynamic + $script:swFactoryMetadata + @('logisticsStation')
             foreach ($property in $entity.PSObject.Properties) {

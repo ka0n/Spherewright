@@ -16,6 +16,8 @@ internal sealed partial class NormalGameActionCoordinator
         string? requestedSessionId,
         PrepareBuildRequest request)
     {
+        var routePreviewError = BeltRoutePreviewPolicy.ValidateRequest(request);
+        if (routePreviewError is not null) return InvalidPlan(routePreviewError);
         var endpointPreviewError = BeltEndpointPreviewPolicy.ValidateRequest(request);
         if (endpointPreviewError is not null) return InvalidPlan(endpointPreviewError);
         var common = ValidatePrepareCommon(requestedSessionId, request.PlanetId, request.StateHashVersion);
@@ -44,7 +46,7 @@ internal sealed partial class NormalGameActionCoordinator
         if (filterError is not null)
             return GameCallResult<PreparedNormalAction>.Failed(filterError);
 
-        var routingError = BeltPathRoutingPolicy.ValidateRequest(request, item.prefabDesc.isBelt);
+        var routingError = request.BeltRoutePreview is null ? BeltPathRoutingPolicy.ValidateRequest(request, item.prefabDesc.isBelt) : null;
         if (routingError is not null)
             return InvalidPlan(routingError + ": " + (request.BeltPathMode == BeltPathModes.NativeElevatedGrid
                 ? BeltElevationPolicy.Recovery : BeltPathRoutingPolicy.Recovery));
@@ -76,6 +78,11 @@ internal sealed partial class NormalGameActionCoordinator
         if (!string.Equals(request.ExpectedPlayerStateHash, playerResult.Value.StateHash, StringComparison.Ordinal))
         {
             return StalePlan("Player inventory, construction queue, or position changed after inspection.");
+        }
+        if (request.BeltRoutePreview is not null)
+        {
+            try { return PrepareBoundedBeltRoutePreviewOnMainThread(request,playerResult.Value); }
+            catch (InvalidOperationException error) { return NotReadyPlan(error.Message); }
         }
 
         BuildPreparation preparation;
@@ -169,6 +176,8 @@ internal sealed partial class NormalGameActionCoordinator
                         : preparation.DestinationObjectId > 0 ? "native_device_port" : "none",
                     ReusedDestinationObjectId = destinationAnchor?.EntityId,
                     DestinationPreservationMode = destinationAnchor is null ? null : BeltDestinationReusePolicy.PreservationMode,
+                    UnpoweredSourceMinerObjectId = destinationAnchor?.SourcePath?.UnpoweredMinerFeed?.ObjectId,
+                    UnpoweredSourceMinerStateHash = destinationAnchor?.SourcePath?.UnpoweredMinerFeed?.BindingHash,
                     NewObjectCount = preparation.Steps.Count,
                     RoutingMode = preparation.Steps[0].BeltPathMode,
                     StartAltitudeLevel = request.BeltPathMode == BeltPathModes.NativeElevatedGrid ? request.BeltStartAltitudeLevel : null,
@@ -648,7 +657,9 @@ internal sealed partial class NormalGameActionCoordinator
         EndpointPoint destination,
         string routingMode,
         out List<BuildStepPlan> steps,
-        out string rejection)
+        out string rejection,
+        Action<float>? nativeSlopeReadback = null,
+        Action<IReadOnlyList<Vector3>>? nativePointsReadback = null)
     {
         steps = new List<BuildStepPlan>();
         rejection = string.Empty;
@@ -702,11 +713,15 @@ internal sealed partial class NormalGameActionCoordinator
             forceVertical: false,
             ref maxSlope,
             useOldPath: sourceIsBelt && destinationIsBelt);
+        nativeSlopeReadback?.Invoke(maxSlope);
         if (count < 2 || count >= points.Length)
         {
             rejection = "DSP's terrain grid did not return a complete, unsaturated bounded belt path.";
             return false;
         }
+        // Geometry observation copies the full native result before endpoint
+        // canonicalisation. Ordinary action callers do not request this copy.
+        nativePointsReadback?.Invoke(points.Take(count).ToArray());
 
         if (geodesic && !BeltPathRoutingPolicy.CompleteGroundPath(points.Take(count).Select(Snapshot).ToArray(),
             points.Length, Snapshot(source.Pose.position), Snapshot(destination.Pose.position), factory.planet.realRadius + .2f))
@@ -1197,14 +1212,16 @@ internal sealed partial class NormalGameActionCoordinator
         IReadOnlyList<BuildStepPlan> candidates,
         out List<BuildStepPlan> accepted,
         out string rejection,
-        out BridgeError? rejectionError)
+        out BridgeError? rejectionError,
+        BeltRoutePreviewSnapshot? readOnlyRoute = null)
     {
         accepted = new List<BuildStepPlan>();
         rejection = string.Empty;
         rejectionError = null;
         if (candidates.Count < 2 || candidates.Any(step => step.BeltPathMode != candidates[0].BeltPathMode)
             || (candidates[0].BeltPathMode != BeltPathModes.NativeGrid && candidates[0].BeltPathMode != BeltPathModes.NativeGeodesic
-                && candidates[0].BeltPathMode != BeltPathModes.NativeElevatedGrid))
+                && candidates[0].BeltPathMode != BeltPathModes.NativeElevatedGrid
+                && !(readOnlyRoute is not null && candidates[0].BeltPathMode == BeltPathModes.NativeRoutePreview)))
         {
             rejection = "belt_routing_mode_inconsistent";
             return false;
@@ -1250,6 +1267,14 @@ internal sealed partial class NormalGameActionCoordinator
             tool.buildPreviews.AddRange(previews);
             if (!TryAttachDestinationCover(factory, item, candidates, previews, tool, out var destinationCover, out rejection)) return false;
             var valid = tool.CheckFullPathConditions();
+            if (readOnlyRoute is not null)
+            {
+                readOnlyRoute.NativePathCheckPerformed=true;
+                readOnlyRoute.Points=previews.Select((p,i)=>new NativeBeltRoutePoint{Index=i,PlannedPosition=Snapshot(candidates[i].Position),Position=Snapshot(p.lpos),
+                    Rotation=NativeFactoryGeometry.Rotation(p.lrot),Tilt=p.tilt,NativeCondition=p.condition.ToString()}).ToList();
+                var failed=previews.FindIndex(p=>p.condition!=EBuildCondition.Ok);
+                if(failed>=0) {readOnlyRoute.FailedBeltIndex=failed;readOnlyRoute.FailureCondition=previews[failed].condition.ToString();}
+            }
             var rejected = previews.FirstOrDefault(preview => preview.condition != EBuildCondition.Ok || preview.coverObjId != 0 || preview.willRemoveCover)
                 ?? (cover is not null && cover.condition != EBuildCondition.Ok ? cover : null)
                 ?? (destinationCover is not null && destinationCover.condition != EBuildCondition.Ok ? destinationCover : null);
@@ -1554,7 +1579,38 @@ internal sealed partial class NormalGameActionCoordinator
                 }
             }
 
-            create();
+            // Retain the exact prepared geometry before native create/post-create
+            // proofs. A proof exception after material consumption must not discard
+            // the evidence required for same-action quarantine reconciliation.
+            action.ExpectedBuildEntities.Clear();
+            foreach (var step in action.Plan.BuildSteps)
+                action.ExpectedBuildEntities.Add(new BuildExpectedEntity
+                {
+                    ItemId = item.ID,
+                    Position = step.Position,
+                    InputObjectId = step.InputObjectId,
+                    OutputObjectId = step.OutputObjectId,
+                    InputStepIndex = step.InputStepIndex,
+                    OutputStepIndex = step.OutputStepIndex,
+                });
+
+            try { create(); }
+            finally
+            {
+                // Record only actual surviving native prebuild identities. Partial
+                // creation still remains unknown; cost, unique entity attribution
+                // and full directed topology are required by reconciliation.
+                foreach (var preview in previews)
+                {
+                    var id = preview.objId;
+                    if (id >= 0 || id == int.MinValue || factory.prebuildPool is null
+                        || -id >= factory.prebuildCursor || -id >= factory.prebuildPool.Length) continue;
+                    var prebuild = factory.prebuildPool[-id];
+                    if (prebuild.id == -id && prebuild.protoId == item.ID && !prebuild.isDestroyed
+                        && Vector3.Distance(prebuild.pos, preview.lpos) <= .01f
+                        && !action.PrebuildIds.Contains(-id)) action.PrebuildIds.Add(-id);
+                }
+            }
             if (action.Plan.BuildKind == NormalBuildKinds.Belt
                 && action.Plan.BuildSteps[0].BeltPathMode == BeltPathModes.NativeElevatedGrid
                 && !ProvesCreatedElevatedPath(factory, action.Plan.BuildSteps, previews))
@@ -1586,16 +1642,7 @@ internal sealed partial class NormalGameActionCoordinator
                         throw new InvalidOperationException("Native sorter prebuild attachment poses changed; do not replay construction.");
                 }
 
-                action.PrebuildIds.Add(-preview.objId);
-                action.ExpectedBuildEntities.Add(new BuildExpectedEntity
-                {
-                    ItemId = item.ID,
-                    Position = preview.lpos,
-                    InputObjectId = preview.inputObjId,
-                    OutputObjectId = preview.outputObjId,
-                    InputStepIndex = action.Plan.BuildSteps[previews.IndexOf(preview)].InputStepIndex,
-                    OutputStepIndex = action.Plan.BuildSteps[previews.IndexOf(preview)].OutputStepIndex,
-                });
+                if (!action.PrebuildIds.Contains(-preview.objId)) action.PrebuildIds.Add(-preview.objId);
             }
 
             if (player.package.GetItemCount(item.ID) != baseline - previews.Count)

@@ -42,6 +42,7 @@ public sealed class ListFactoryEntitiesResult
 
 public sealed class InspectFactoryEntityRequest
 {
+    public FactoryGeometryReadRequest? Geometry { get; set; }
     public int PlanetId { get; set; }
 
     public int ObjectId { get; set; }
@@ -52,6 +53,8 @@ public sealed class InspectFactoryEntityRequest
 
 public sealed class FactoryEntitySnapshot
 {
+    // Detail-only, opt-in local geometry; excluded from all action/configuration hashes.
+    public FactoryGeometryCutSnapshot? GeometryCut { get; set; }
     public string SessionId { get; set; } = string.Empty;
 
     public int PlanetId { get; set; }
@@ -87,6 +90,11 @@ public sealed class FactoryEntitySnapshot
     public long? PowerDemandPerTick { get; set; }
 
     public double? PowerServeRatio { get; set; }
+
+    // Detail-only scalar observation for ordinary thermal/fusion generators.
+    // Null/unavailable is unknown, not zero. Excluded from every action hash;
+    // fuelEnergy is residual loaded heat, never an extra count of fuel items.
+    public FuelPowerStateSnapshot? FuelPowerState { get; set; }
 
     public List<FactoryConnectionSnapshot> Connections { get; set; } = new List<FactoryConnectionSnapshot>();
 
