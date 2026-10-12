@@ -77,3 +77,45 @@ Offline fixtures make zero real game calls. Source stdio smoke: version 0.4.0.0,
 ## Review boundary
 
 The installed working runtime is untouched. This merged cohort has source, automated regression and actual Plugin compile evidence; it has no new live Passive-Drift/remote-read/action/save/restart acceptance. No final ZIP, deployment transaction or cross-computer validation is claimed. Those remain separate Steering/runtime gates. Local checks do not imply remote CI success. No deployment recommendation or authorization is issued.
+
+## Subsequent fork runtime acceptance (2026-10-12, Europe/Berlin)
+
+Steering reported the following completed live acceptance for reviewed merge `02167fbea4655064c51eadb5dffdbb0c9994d236` on `integration/upstream-2026-10-12` and assessed it as **PASS for merge to main**. This section records that supplied acceptance; documentation and Git integration do not repeat any gameplay, deploy, save, load or runtime operation. The source-only scope and pre-runtime review boundary above describe the earlier integration phase.
+
+### Cold deploy and recovery
+
+- Runtime source: exactly `02167fbea4655064c51eadb5dffdbb0c9994d236`.
+- Deploy operationId: `20261012-153402-379914fe`; five payload files; wrapper verification `verified=true`.
+- Immediate pre-deploy backup: `20261012-153403-7f32fbe7`.
+- Previously verified known-good recovery backup: `20261012-124139-32333b3e`.
+- Bridge configuration was preserved: `AllowWrites=true`, `AllowUnownedRichReads=true`, `AllowUnownedNormalWrites=true`, `AllowUserSaveImport=false`, `RequirePeacefulSave=true`.
+
+### Session and public reads
+
+The existing manually loaded singleplayer save had Dark Fog enabled and Aggressiveness Passive. It remained unowned: `OwnedBySpherewright=false`, `readAccessMode=observed_unowned`, `peacefulMode=confirmed_combat`, `darkFogAggressiveness=0`, `writesAllowed=true`, `writeHealth=healthy`, no write blockers and no quarantine. Player, Factory and Local-star reads succeeded.
+
+This live case confirms normal non-combat authority in the existing Dark-Fog/unowned model despite `RequirePeacefulSave=true`: Peaceful status and Dark Fog aggressiveness are not Normal-Action authority gates. Aggressiveness values other than the observed Passive value were not newly exercised live; their wider telemetry-only semantics retain the existing automated coverage.
+
+### Normal non-combat movement
+
+Action `23549ee8-701f-4063-8d23-c84fa5e8d011` executed a small ground movement through the complete Prepare/Commit/Poll path. Prepare succeeded with `commitAllowedNow=true`; Commit was accepted; the terminal result was `completed`, `succeeded=true`. Normal movement ticks brought the player within approximately `0.63 m` of the target, followed by `movementState=Walk` and speed `0`.
+
+The session stayed unowned and write health stayed healthy, with no quarantine. No Factory object was changed by this acceptance test.
+
+### Passive Drift boundary
+
+The positive Passive-Drift case was not artificially induced and has not been performed live. An unsuitable observed state (`Fly`, approximately `0.23 m/s`, above the maximum `0.15 m/s` drift speed) was safely rejected at Prepare with `STALE_STATE`; no write occurred.
+
+The positive cross-reader Passive-Drift semantics remain covered by the existing tests. Steering explicitly assessed the missing artificially induced positive live case as **not a merge blocker**; this record does not claim that case passed live.
+
+### Same-star remote Factory read
+
+After the user manually flew from `45 Canis Minoris I (2701)` to `45 Canis Minoris II (2702)`, remote `inspect_factory_entity` successfully read object `1` on planet `2701` from planet II. The response included the complete Factory, Storage, Connection and Slot geometry.
+
+Spherewright did not switch the remote planet, create a Factory or perform a gameplay write for this read. The session remained `OwnedBySpherewright=false`, `writesAllowed=true`, `writeHealth=healthy`, without quarantine.
+
+At that time `get_local_star_system` reported planet I with `factoryLoaded=false`, while the direct remote inspection succeeded. This is a recorded observation requiring further analysis before any bug classification; the remote read itself passed.
+
+### Acceptance decision and remaining boundaries
+
+Steering's merge decision is **PASS** for this exact reviewed source, supported by the preserved offline/build evidence and the bounded live read, normal movement and same-star remote read results above. Positive Passive-Drift live acceptance remains unperformed and is not a merge blocker. This acceptance does not establish save/restart persistence, complete Foundry/Governor acceptance, cross-computer validation or general deployment authorization. Recovery backups remain available; no recovery operation is part of documentation or the Fast-Forward integration.
