@@ -43,3 +43,5 @@ try {
     if (-not $resolved.StartsWith($allowed, [StringComparison]::OrdinalIgnoreCase)) { throw 'Unsafe fixture cleanup.' }
     Remove-Item -LiteralPath $resolved -Recurse -Force
 }
+# Do not leak the expected negative child's exit code to a dot-invoking CI host.
+exit 0
