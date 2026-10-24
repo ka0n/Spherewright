@@ -1,0 +1,922 @@
+{
+  "sourceCommit": "e3a83ddb9b17764b1e27f1947ffd0bafbd93e586",
+  "purpose": "Unchanged fork operational provenance; SHA-256 over UTF-8 text normalized to LF for Git checkout portability; no execution authority",
+  "records": [
+    {
+      "path": "docs/current-status.md",
+      "sha256Utf8Lf": "F2D2FFD6B12AC43D633248574A09B927BC9F9159A374B3303D59AFAD68ED2924"
+    },
+    {
+      "path": "docs/evidence/2026-09-26/belt-input-proof.md",
+      "sha256Utf8Lf": "5024396BE5B42252CD877D10154F86D56A954DE7D94FBE1CB71ABEE9E7E0E833"
+    },
+    {
+      "path": "docs/evidence/2026-09-26/bounded-action-history.md",
+      "sha256Utf8Lf": "ED8318F74B8DA47AADD9E33A739AD21EC320EB7E805EC015BAA6AE4189E2A1A4"
+    },
+    {
+      "path": "docs/evidence/2026-09-26/factory-reentry-audit.md",
+      "sha256Utf8Lf": "D805A1E421FAC284A7A9BE78EC4A5D360645E92C61F5B17EBBD70A22E69E6B93"
+    },
+    {
+      "path": "docs/evidence/2026-09-26/harvest-approach.md",
+      "sha256Utf8Lf": "A8D5DFA761AF05DBEF8B1FB75B9560B91931E600A350DA393CC8B091132347E7"
+    },
+    {
+      "path": "docs/evidence/2026-09-26/hps-output-save-audit.md",
+      "sha256Utf8Lf": "4857137C77FAED463261CF6E2A659D2BA369B0FB8349BA61F45386371C191C6A"
+    },
+    {
+      "path": "docs/evidence/2026-09-26/install-preflight.md",
+      "sha256Utf8Lf": "66ABDA1FFC6B308E837994F14EE332E295D3659BF9EFD63835AA3C0706949300"
+    },
+    {
+      "path": "docs/evidence/2026-09-26/install-release-stage-only.md",
+      "sha256Utf8Lf": "9C1A92F3D6D1A3A31FC7E451414F2C0F87B0720A41F63A1FD457B21F095096FD"
+    },
+    {
+      "path": "docs/evidence/2026-09-26/reentry-preview.md",
+      "sha256Utf8Lf": "313F3ABF877699B7E1F72FF9F1B08D7A3FA467BCB90ABE98055D038E324CE400"
+    },
+    {
+      "path": "docs/evidence/2026-09-26/same-primary-recovery.md",
+      "sha256Utf8Lf": "A89C826FE2F3A3697573697D39E561125E490648D523E6C8528AD26D4F38F507"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/fixed-autosave-cold-deployment.md",
+      "sha256Utf8Lf": "634CED341D18E1BF7BFE576D6783E4364DD24B0DD925370E56198A087AF1E458"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/fixed-autosave-inspection.md",
+      "sha256Utf8Lf": "D291465C3FD881463475406D574671C593CCDD26FC7FBE636267CDDC83D2F372"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/fixed-autosave-recovery-live.md",
+      "sha256Utf8Lf": "FE86D98B2DA0B8CC21748C1F91D2C2FE268C99C54A5826FC8F6F3683DBCEF60A"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/fixed-autosave-recovery-source.md",
+      "sha256Utf8Lf": "9266CA6FFCB3C7EF8AB046DEC20A5AC8D8BE49CBDD346F366E6B1B4F5A1E34EE"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/hps-first-infeed-reconciliation.md",
+      "sha256Utf8Lf": "5110328712C19686439F9E492791FBFB3166F70FDBF9B116CDFC953017A05B9E"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/hps-remaining-infeeds-save.md",
+      "sha256Utf8Lf": "96E00C6F80237D47558D373843A3D9C7744BFBECBFC41BABC1EAC17D9E24BDC6"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/hps-supply-diagnostic-windows.md",
+      "sha256Utf8Lf": "2C169C3C19FA39AD6DA5A5EBEA43AA4F02E4DF0BFB50205ABA629FF73E566E68"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/install-caught-failure-rollback.md",
+      "sha256Utf8Lf": "657D6B40526A49DCFF45ABA31D2E0F38224CEA003EA42CE21B30A7F51C10BE0D"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/install-explicit-recovery.md",
+      "sha256Utf8Lf": "64ED7E6E6FB224C746DB9A0948FF5D1AB967BB71C9494F06CB46E554E5E795B9"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/install-package-cli.md",
+      "sha256Utf8Lf": "09F658812ECDA13710FFEEAED56ECE1651DC32452954A3F1982B1D67D52B68AC"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/install-package-interruption-recovery.md",
+      "sha256Utf8Lf": "124753A0F2F9FB8DC22139A5E5826274836E0D762D84855BAB9672FA8AF91BD7"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/install-path-budget-package.md",
+      "sha256Utf8Lf": "C6F2CFE9147C5AD90B2EA4186CEC76BF626A5CCC1422506C8750338CCC130E1A"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/install-path-budget.md",
+      "sha256Utf8Lf": "BC0146F8E97D224F5331A490E66DF39B8FB682B5BC677A754C72192403E9C61D"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/install-pending-startup-gate.md",
+      "sha256Utf8Lf": "E41EF10005E252D11774F661AEE0A056CA80F29830F0A3C5B22075829D770165"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/package-native-version.md",
+      "sha256Utf8Lf": "7D6BC41069B6E5AD880B4ECF03967B8F62689DAAD83126BD17A465AB552D3DA2"
+    },
+    {
+      "path": "docs/evidence/2026-09-27/staged-mcp-metadata.md",
+      "sha256Utf8Lf": "3A23259FC23E3B8AA0AD6170A0ADEF45679040327A75AF4F3A3C39B593D71930"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/cnt-hydrogen-ring-dependency.md",
+      "sha256Utf8Lf": "6E5C380003AE6C1C608A4253C1E02685740AF590DC1E580AF1F89791D7F0FF60"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/coal-graphite-capacity-plan.md",
+      "sha256Utf8Lf": "04D04B663E703CC6538F12F63BA5B7236E90585B7EE16F8422E24A3C12F79321"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/coal-materials-approach-ten-audit.md",
+      "sha256Utf8Lf": "2EB5665DE3D535FDC93FDB2286588CCEF271CBB3CFB4E9459843EFCF0554D079"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/coal-node319-power-miner-save-audit.md",
+      "sha256Utf8Lf": "8D08E013C80CD99CFA6FDE33DE97CD91BE7C0777684EC0A04206A7062BFBCDF1"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/coal-outlet-single-span-blocker.md",
+      "sha256Utf8Lf": "BB696EE3A48F35975BDB2A1126DD2287BE63C49DEB62846E2496601003EED91A"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/coal-short-ends-save-audit.md",
+      "sha256Utf8Lf": "BD6E619C1C3ED53CCCC20EBE5511C2A0DE4F77F194E54A29D00E46667B34D675"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/coal-short-ends-sorter-save-audit.md",
+      "sha256Utf8Lf": "44288429E81673211BBB8D886B27E526CE86E9099574D306483152748F8F3918"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/coal-site-approach-ten-audit.md",
+      "sha256Utf8Lf": "751BB00BB05A5C16633C1898A03D70CCFF5C7BD7FBFE18C482CEF6272BC43496"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/fuel-staging-ten-audit.md",
+      "sha256Utf8Lf": "7A04EAFD9CA5A8D1515C644CF7A19763148800C6F64C2E0899612ABFAB4B70A8"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/graphite-route-material-kit.md",
+      "sha256Utf8Lf": "2334C76D4B7E1F8DBF6C870EB3FC7A073131F3D9FE4509313C21B5779C7BD895"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/hydrogen-bootstrap-staging.md",
+      "sha256Utf8Lf": "16530EDBDD68851A00EE84409DC2F7732F1200791AE9076F8F306A339780A4DE"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/silicon-expedition-kit-ten-audit.md",
+      "sha256Utf8Lf": "C7C862B3A9B8F2E21018C418716F4DFA5D3BB18E4ECCBF1FF3A0EB70043215DB"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/silicon-parallel-outlet-save-audit.md",
+      "sha256Utf8Lf": "63A769AEDC7EDA39543361015A0C6B82860CDB339A9EC0815413ACFCAC28563C"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/silicon-post-repair-supply-windows.md",
+      "sha256Utf8Lf": "3151881F285B8FB3186C9D4D0F66F3D333AB90DB0C275808B2D3361DEDF1391A"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/silicon-return-mother-save-audit.md",
+      "sha256Utf8Lf": "483AD5758D53E2006DABA98B1C32A05DEB3023FF07DCFF6764D9E96F264C07AD"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/silicon-sorter174-native-upgrade.md",
+      "sha256Utf8Lf": "80365524F4CD8549B5D7E2044B437ED45680B01AA6996A89B62A205967A2267F"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/silicon-sorter179-native-upgrade.md",
+      "sha256Utf8Lf": "247252253B88A1D9FFEFC90A28C70C93C155BABBFD1680440DE13C14837F2BEC"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/silicon-source-flight-arrival.md",
+      "sha256Utf8Lf": "D067C77C1095CB25E8A7A0C7E68ECEA823AA543332D6B0B3AAC69F00897B5F9A"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/silicon-source-parallel-sorter.md",
+      "sha256Utf8Lf": "FDC59AB589B7FE09C999335C138C3B18D09480407ED36EDE0D25FBC6C0A7E783"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/silicon-source-sorter-capacity.md",
+      "sha256Utf8Lf": "3D8289F13D71CCB6376F13DD0EC02C878F2D1559E3CCC2CA058E1796019A320F"
+    },
+    {
+      "path": "docs/evidence/2026-09-28/silicon-upgrade-materials-save-audit.md",
+      "sha256Utf8Lf": "93E36CB54944738044DDCB3A7665924F3AC39DECEB8776F24224F821DB6A278B"
+    },
+    {
+      "path": "docs/evidence/2026-09-29/coal-resume-move-ten-write-audit.md",
+      "sha256Utf8Lf": "0A4C8FD304732D9504E4F4098AE8557B13C443FB09D5601298CC764F61F70C8D"
+    },
+    {
+      "path": "docs/evidence/2026-09-29/coal-sorter-approach-stall-pilot.md",
+      "sha256Utf8Lf": "152B7E18DD75586477DD83C1C60C954906D59053447CEEDD7AAD227B0271DAE4"
+    },
+    {
+      "path": "docs/evidence/2026-09-29/dsp-29104-owned-primary-live-recovery.md",
+      "sha256Utf8Lf": "A4082C7692927E29902E628292091E962814121138EEFF8E9AD6C5AF8BE61933"
+    },
+    {
+      "path": "docs/evidence/2026-09-29/dsp-29104-source-adaptation.md",
+      "sha256Utf8Lf": "46AF48059E4690BAD3CFACC7AF4E261EF18CC7845F35186650D8FABD6D3A7ABC"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/AGENTS-history-through-2026-09-30.md",
+      "sha256Utf8Lf": "C996CB78362AFFE7762C7D1859F4ECA8BEE2435777AD71E1D8504768AAC5F0B3"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/blue-backup-sorter-binding.md",
+      "sha256Utf8Lf": "C9184CF5DCE7642EB93ACAA4FFF1FEE18BA90D0FBC495ABB6FEBA96CC1A29FD7"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/coal-approach-stall-and-save.md",
+      "sha256Utf8Lf": "CD0CD50F661D2D69A435F0ABF6BC78E4BA5CD7819B8F270A093AED07A2A96004"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/coal-backpressure-and-idle-research.md",
+      "sha256Utf8Lf": "44C81D2A6432BDF04996DC2E245DA98BE8606C7CD960822055A1839D6F7901B0"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/coal-corridor-probe-and-ten-write-audit.md",
+      "sha256Utf8Lf": "82E627732D3E789343533A430B0150E396B61676D2D52AF7D3E47ECF3E449A53"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/coal-furnace-input-recipe-save.md",
+      "sha256Utf8Lf": "C306CA2CB8056A36BDEA44EC7A1986B041A0776308D4FFA0D9EAE09A4595DD6E"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/coal-historical-approach-sorter-upgrade-save.md",
+      "sha256Utf8Lf": "EE1DB14CB3E98E53CD5B3807432E0009B14F22FC2238D5DE4BBBDE7A015125E5"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/coal-miner-kit-craft-and-caller-timing.md",
+      "sha256Utf8Lf": "19B60DB81B7B985F9A6FD42D78C1490D0BA61A67FF6E00C03C1F3A28F27D77C7"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/coal-miner-materials-ten-write-audit.md",
+      "sha256Utf8Lf": "7AABF9CAF3DBC501EB7527BF49CB3121DD626A6B9148DADBD52F0F49FF714A6D"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/coal-miner-outlet-furnace-save.md",
+      "sha256Utf8Lf": "03257CF2D9C8346EAE012C089F5222114059A459C37A5F4C66DAD75B70793110"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/coal-short-move-revision-readback.md",
+      "sha256Utf8Lf": "819BA4DB6DBF90E6EA60A0676E0D27A04D12A6702795C4587557A34DC283A604"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/coal-to-graphite-native-route-preview.md",
+      "sha256Utf8Lf": "948D449E8EC6FCD90FAC1F28860D9914AD48BAA2F022893026155245F0A51370"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/core-materials-normal-save.md",
+      "sha256Utf8Lf": "220D0951351A042F00E76BE150DB6B59AB921509139B5DD6EB9B548771CE2BEC"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/core-materials-ten-write-audit.md",
+      "sha256Utf8Lf": "5BA90A3711F55F1D2E6BD0167FA67F42E372245CC82B064645498EDF40D799BC"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/core2104-shared-research-save.md",
+      "sha256Utf8Lf": "2E7F32A74FB896FC6B34571F309F39EC58BD6836D4B1FC761C754E2F03747699"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/current-status-history-through-2026-09-30.md",
+      "sha256Utf8Lf": "B59305B795C66D5DAE0D4C2A801CB9F50466721FA725F9062A3A6BA3A28C023F"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/graphite-fuel-three-window-consumer-blocker.md",
+      "sha256Utf8Lf": "99E450734AEDE8F16193B8F79337A911433090EE88E90BA3F44751B93B2B44F1"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/graphite-inlet-two-sorters-save.md",
+      "sha256Utf8Lf": "7BDCBBD5A396544DD7E71A330D0F7137DC9DA925B4315A2A1F4ECEA0579E86D9"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/graphite-outlet-extension-ten-audit.md",
+      "sha256Utf8Lf": "878698C9720D7CA1DAA2731802029C9AA89F028EABE88ACC074A176BDBE7D0D5"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/graphite-outlet-short-belt-save.md",
+      "sha256Utf8Lf": "2A0769C2EA050A4F5C534134732A0AADB03985102A5DC5DB8D4AEC31CC92E4EA"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/hydrogen-exit-upgrade-save.md",
+      "sha256Utf8Lf": "5F20CA770332F4D26A746D5A900B553A5B70D6935BC15BDFD1CAAEBE599D52AD"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/hydrogen-sink-demand-gate.md",
+      "sha256Utf8Lf": "09C3169F4EC9FCF1F19884EF4E9D0DB5DE9383A672F5AF64F09662D82FEED3D9"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/hydrogen-upgrade-three-window-diagnostic.md",
+      "sha256Utf8Lf": "A86486B2E8D15FFF4ACD30E0144881D8AD88B37AB410BA4E9EB57EA7FD4DEB2B"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/local-040-package-surface-preview.md",
+      "sha256Utf8Lf": "01FB020C75F1BEDB87B433C7068CFF79159B634A765B5B5C003A01B719F7668B"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/local-coal-graphite-candidate.md",
+      "sha256Utf8Lf": "6E3A66F9DF17CE3636B4F5712C5D44751DB05989271F2E3EDA99CD851346C817"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/minimal-workflow-efficiency.md",
+      "sha256Utf8Lf": "A0123C5C61ADB5EC1CF02460D00A9B7850E475DE8E25544339D3AE32952A33D8"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/normal-save-ten-write-fastpath-audit.md",
+      "sha256Utf8Lf": "3AFFEAFD8281C54D270894B61A52493EDF7E264A667641B6C5315DD38EA098C6"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/owned-recovery-readonly-and-error-fields.md",
+      "sha256Utf8Lf": "A661635CEF7FD6531B77CB709657AF21B5F782FFD1AEECB419B4BFBCDFEC240E"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/post-research-zero-output-window.md",
+      "sha256Utf8Lf": "FDDCD907D48542F3EFB8A6B2414F2F30F45E9FDE650C0F1F454EFB1483E8F2F9"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/purple-route-sorter-materials.md",
+      "sha256Utf8Lf": "015D8A25A2534BB780BAC21AFC2E70F5F13B3D0ED4A45DB1D8BF46B66AB139FF"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/purple-source-stub.md",
+      "sha256Utf8Lf": "402395AEFCCFB6A1FA5ADD1A30FA955B78226560DC81E1BDC8B225EC548C1CD9"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/purple-trunk-collision-and-save-unavailable.md",
+      "sha256Utf8Lf": "8A2AF8DE0558569328EFCF7694826A47EFBA12D8BA778DCB74EB9B98F5C29A63"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/research-1126-caller-and-save.md",
+      "sha256Utf8Lf": "4DDEAA13445BD05DBCA4CF0AFAC3078FEDF9664DEF9FB66282084029AAF1190E"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/research-demand-save-resume-two-windows.md",
+      "sha256Utf8Lf": "BB546E4747D8DF267CCB0EE8EBB1E6A394573F7E8817C8169026C0737FEC87FA"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/runtime-item-identity-correction.md",
+      "sha256Utf8Lf": "F780DD651693BF0CEC0E9B8B658A49064912678EAD37BB99F9BAF40B57FF6586"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/science-consumer-sorter.md",
+      "sha256Utf8Lf": "2A2235CA007F6625C216AECB94E8A61403B8BE7C3E5ED0C84883ED6BCA4A0518"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/science-consumer-stub.md",
+      "sha256Utf8Lf": "22C7DC80210A2CFE21B70DA26A15DA5960325CF2EB37C90EE4169639737DCEA0"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/six-node-coal-miner-save-ten-write-audit.md",
+      "sha256Utf8Lf": "EE3EA8BBD8977BEDB58A61D042EFD1CE15F40A5F593B478E20922CBA9AC88AAA"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/storage-buffer-caller-fix.md",
+      "sha256Utf8Lf": "98F8A35BC7920EA3DF42805477418511ADE92181C58EA45954F44D99E0916040"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/technology-1104-selection-and-save.md",
+      "sha256Utf8Lf": "19B6740D05935022CB37605D14111FAAC4387AC86988698C282D0F339C5BF759"
+    },
+    {
+      "path": "docs/evidence/2026-09-30/technology-1607-selection-save-caller-delay.md",
+      "sha256Utf8Lf": "F25C0F1DE1707C17F1ECBD2ED53DCB2BAB60409AADDBC688B1070EF861E8CF40"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/active-fixed-autosave-recovery.md",
+      "sha256Utf8Lf": "D2E674169DC6B58B0113F089BBA48E924F61B9AEBB3409ED40EF957392D76E65"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/drive-engine-four-selection-save.md",
+      "sha256Utf8Lf": "6D04507A5A84D7CD0E08DF001BCF35AE285AA3674646F231340F4DF6631537DD"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/drive-four-save-and-fuel-graphite-boundary.md",
+      "sha256Utf8Lf": "49DF5C198514DEE6B9E5774BD4988100707C878B0450ADF095A0475DF13732A5"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/fuel-continuous-readiness-check.md",
+      "sha256Utf8Lf": "C7ED3874CDCCE184177820C02E2DC8A653A2B428E7F0278CED7C182546F00998"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/powershell-stdin-entry-noop.md",
+      "sha256Utf8Lf": "8DCE1516DE7BDD9DEE784ED1A42EE876AB7F51C408023B1FB6C0CC75604AEF83"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-consumer-down-ramp-and-save.md",
+      "sha256Utf8Lf": "CFF8DEE97A2B6EB7AC3FDED3BA3A2947FB9455CC91066231454212B2E191E243"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-consumer-interface-sorter-and-save.md",
+      "sha256Utf8Lf": "B7F5B30A822239D24A5A176EBD98B4BFABE1DAB6A4D82C61FFC286D946E81A42"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-corner-east-interface-and-save.md",
+      "sha256Utf8Lf": "7DC451425825FB1882A9922B8A85EC7D050D98334D409C15B423E576FD462DEB"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-critical-path-source-route-demand.md",
+      "sha256Utf8Lf": "73B969D9C8F5DEF962750EC277F9F1FAEC67B9FCD4010182DB91090F99254A40"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-demand-gate-and-stone-shortfall.md",
+      "sha256Utf8Lf": "9A25584D9BA9277E55AED8569E6380779EE04A352EA10C4E8F53E5C0F866AFD3"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-east-consumer-interface-span.md",
+      "sha256Utf8Lf": "D747B0D64DBA5B500C0824C9C46E18BDB867C0D0E6C44AAAC700663D73B11F1A"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-east-interface-power-tower.md",
+      "sha256Utf8Lf": "A645415E3E9E3A3FB4111D0ABDB878D6CC967779E2685EB5584F8494986991E8"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-east1-east2-powered-interface-and-save.md",
+      "sha256Utf8Lf": "BD02071DC706FE48C7D65BD45C0A4D0918F8256E90965D3918DD9BFD3FBF2D65"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-east1-native-span.md",
+      "sha256Utf8Lf": "80DE2DA36F8D983A020B34AF9C8477786E7E458C1F8A27BE48474C5672A07C89"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-east2-consumer-cover-and-save.md",
+      "sha256Utf8Lf": "28594D3C87545BCCA15E3B7F4FCF144CFE5ADBFDF7F6FB48EBE1D36552DC794E"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-east2-native-span.md",
+      "sha256Utf8Lf": "E31D4DBAD928CDA110A1ED6086464289ED074E59CFF6B296267BDEB3A71A48FF"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-elevated-prefix-interface-and-save.md",
+      "sha256Utf8Lf": "B69D08BF7A73CC3C77868628CA225BFAB1812DEF164BB7D5E1987C92E64A4D5C"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-ground-trunk-crossing-blocker.md",
+      "sha256Utf8Lf": "A49594FBEB9C1C0CBF9449FF417A3BC7437306743046E337B89DA91141C83031"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-north-native-cover.md",
+      "sha256Utf8Lf": "05AFE2E537176AEF85F56889F154B53A1245BA250FEC5A2679DAA6DA18BBC11B"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-north-ramp-occupancy-blocker.md",
+      "sha256Utf8Lf": "D4DEBDA29FAF522E8CA2D5B4D026C4A7EB98C4546DAF2DFC1FE20C1448212C3F"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-raised-corner-native-span.md",
+      "sha256Utf8Lf": "C535E2230D775CA1B773A1DD993616C983715FFA84518E43278F8C41DF994E63"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-raised-window-ten-write-audit.md",
+      "sha256Utf8Lf": "F6B24ADD6ED5C20EB5DA39C8401718A70C8B04F0808A059E85EDA731F19E295C"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-sorter-material-kit-and-save.md",
+      "sha256Utf8Lf": "20018BD469CA6D13575DC6CAE39ADBB61103D03C4902FA8F8D9B77359E50F3FD"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-source-dogleg-ten-write-audit.md",
+      "sha256Utf8Lf": "166E275C3DB6BBA0C2493F2A5B65A98DD4EAE2AEC0B3E79260FB4F243BF19D92"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-source-normal-save.md",
+      "sha256Utf8Lf": "9230494530A0822DEE0E19F98780BAD3B574768F63F8396AE825620C1809500B"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-source-warehouse-outlet-and-save.md",
+      "sha256Utf8Lf": "922E4CC9BB22CB37FAB690620FE10E6175477DCE03F1815E22DB9B5DFC785DB6"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-source-west-cover-and-save.md",
+      "sha256Utf8Lf": "4A77511AB27DD63300FD55B1C28F48155F11D96F6088BDA85C5D18C91FB7F3C2"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-supply-ten-write-audit-and-output-diagnostic.md",
+      "sha256Utf8Lf": "ED142A7C299998FDA2C13644682448A06A2B1897A626AB8F7D806B85E1C50D19"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-west-ramp-normal-save.md",
+      "sha256Utf8Lf": "F47535535DEE8C4DDC4955ADB24099B79EBE3C1E0B100E5280B904FD066943AB"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/purple-west-ramp-ten-write-audit.md",
+      "sha256Utf8Lf": "BA4FBEE22C85B897646B3BDAEFA9BEC170F95CD58F3E1CBD9C0912CC37B5B5E0"
+    },
+    {
+      "path": "docs/evidence/2026-10-01/stone-source-exhaustion-and-recovery.md",
+      "sha256Utf8Lf": "6575876230645D29B2EB1CA8A165C1E43FA0EC05BC8338F4747D3EB3890FE025"
+    },
+    {
+      "path": "docs/evidence/2026-10-02/bounded-belt-site-caller.md",
+      "sha256Utf8Lf": "07E180372CAADF1805F7CF3CEEFDF793648700BFB36F51C1E81480D3D6A2C867"
+    },
+    {
+      "path": "docs/evidence/2026-10-02/fuel-startup-and-owned-resume.md",
+      "sha256Utf8Lf": "EFFAAC9C7A4550C27C92A2D97A3CF4CE08D9BF151B043FB868C87A53AE5E0322"
+    },
+    {
+      "path": "docs/evidence/2026-10-02/warper-automatic-source-and-build.md",
+      "sha256Utf8Lf": "CFA6840652BDE3C0434CDA9BF2FC7B93AEA7DD8AED7FEB3A59EF736DF6A74D28"
+    },
+    {
+      "path": "docs/evidence/2026-10-02/warper-plan-material-reserve.md",
+      "sha256Utf8Lf": "1455EE6D62E634CF8DDCB77B76FC3AA221CB2B2137BDB6128DE0E47BB597173B"
+    },
+    {
+      "path": "docs/evidence/2026-10-04/material-inventory-cuts.md",
+      "sha256Utf8Lf": "EF9992EEC574229E8CBAEFAD198E18AF28680CC710D73B5A7AEA96E1462655CA"
+    },
+    {
+      "path": "docs/evidence/2026-10-05/blueprint-tweaks-v4-parser-live-acceptance.md",
+      "sha256Utf8Lf": "A511526AAA52D844676C705BDED78DF3CD74FDEE2F31EA1A30FCB19D1ADB10F2"
+    },
+    {
+      "path": "docs/evidence/2026-10-07/continuing-oil-supply.md",
+      "sha256Utf8Lf": "C03E9D25F4AF63B28720B52263B3F434365F1C18E4C9AAB6168125F5F5B2B75F"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/departure-ils-ten-r303.md",
+      "sha256Utf8Lf": "41BAFF49A2EB073280A1AE2DEA136067B48B7F399B55A6DBA5D85F8D1A35D8E3"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/departure-rod-carry-seven-r320.md",
+      "sha256Utf8Lf": "4DE7C3A4F6683597B55C7C3866D73E57E5AAAB663A033390433AE707811A976B"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/departure-small-kit-ten-r312.md",
+      "sha256Utf8Lf": "B1475C6320C98F5DE659F6806C71AAEFBEB034A8A7E860E24BB6563CFC50FAE5"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/fixed20-window-close-r355.md",
+      "sha256Utf8Lf": "EDD7372C2B1103F745842DA33BE791DB11B974C77AB94E89185D83794E11CB1A"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/fuel-coupling-ten-r185.md",
+      "sha256Utf8Lf": "23698311FD0A5DE1EC0E5B744A6B870C89EBC661557327691B693F6CE8AD2986"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/iron-admission-upgrade-r334.md",
+      "sha256Utf8Lf": "776FCF8C76E6E14EAA7C25984522363777753C74118001DC318B11D102332AAA"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/iron-ore-feeder-r340.md",
+      "sha256Utf8Lf": "E98939AD205B1960A5F5C61ED1EE946DB033255B2B9C8BBCA95030C23FD6D10D"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/iron-routing-full-material-ten-r282.md",
+      "sha256Utf8Lf": "9EF73616E2F7890D321CD4286C30DF3C8F4DDD4D29370678F5279718370FB558"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/iron-source-recovery-ten-r218.md",
+      "sha256Utf8Lf": "C1126334BB5DECA40816D94394343502259EAC47DA1D97B407E19E41079DDE80"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/joint-observation-gap-r321.md",
+      "sha256Utf8Lf": "F4C02527816A15F66BCD30E412B4D9ACE7E90CA61CD25BAFF3D5B0B30342058A"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/joint-supply-long-window-r324.md",
+      "sha256Utf8Lf": "ABCE567E980D558EA5D3AE42E2BD86EB08BCEB4896563B56C5E5995B7812D170"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/oil-cover-prefix-r372.md",
+      "sha256Utf8Lf": "34776F1CCBE67AC450F3040AFBD1E8DE7E774A0E40BAA53B58C9D5CF3A51EE54"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/oil-detour-material-r365.md",
+      "sha256Utf8Lf": "8393C2EE5BECA992F9BB3BE3DF62C54D09BE492A47E88416CE06F8AFEAAD24F6"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/oil-source-admission-r353.md",
+      "sha256Utf8Lf": "1676B074C2DD0291CD800661000FA042210D6B1DE1BD9C5EF83C434722739BC5"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/p102-empty-source-binding-maintenance.md",
+      "sha256Utf8Lf": "4FF95638CCA3A29090EF9F114E3DF56913B52931D61BE7AF19DFC1CDB8D2542B"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/shared-refinery-fuel-coupling-material-ten.md",
+      "sha256Utf8Lf": "F6008D74CCD30B9457D69749A70547AE1E8DBF5B206C3B8DCBD08F3FB87E112C"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/simulation-resident-material-read-maintenance.md",
+      "sha256Utf8Lf": "D6DBD0674EC31636B2C2BEA25E858724D5E68BB678C6B06405110E2DD083D731"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/ti-source-five-belts-reclaim-ten.md",
+      "sha256Utf8Lf": "A111F38B42398497E33DBD95DEBA22F75BA73138ED4F85CE2CE1EEF647EEC5AA"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/ti-source-powered-return.md",
+      "sha256Utf8Lf": "3D5FBE92FF95BAE0F21DF786CD3E13533EF19CD90757870ECD5C569198E71550"
+    },
+    {
+      "path": "docs/evidence/2026-10-08/workflow-overhead-convergence.md",
+      "sha256Utf8Lf": "5950394776698DA6592A8E860B6545C2B0582A532A6860A836857949B2864652"
+    },
+    {
+      "path": "docs/evidence/2026-10-09/empty-belt-live-quarantine-r472.md",
+      "sha256Utf8Lf": "4A8A8A459FF9EA8691F1EC6321CB608601531A9A3FC03580DAEB6922B89D553E"
+    },
+    {
+      "path": "docs/evidence/2026-10-09/empty-belt-recovery-adapter-r454.md",
+      "sha256Utf8Lf": "E92ADA73D7E8ADFF1D18F22769B2E28B58DD1FAD7B68A2F68458876584413F9A"
+    },
+    {
+      "path": "docs/evidence/2026-10-09/fixed-quarantine-recovery-r492.md",
+      "sha256Utf8Lf": "FEF5F85AAF691874220712DA2287638818AF682EB9E4588F827BF29839FD141D"
+    },
+    {
+      "path": "docs/evidence/2026-10-09/full-source-bookends-r441.md",
+      "sha256Utf8Lf": "7115A8A1F5B82E25A493A9881D2F3CF3EF187BE88B7EB646CAB762923B31CBD0"
+    },
+    {
+      "path": "docs/evidence/2026-10-09/joint-source-gap-and-prefix-r391.md",
+      "sha256Utf8Lf": "7E1922CF5067EB35C51D78394CD408F7D2BDBE0C04AA9A602472D9282A08EAA9"
+    },
+    {
+      "path": "docs/evidence/2026-10-09/minimum-ti-demand-r423.md",
+      "sha256Utf8Lf": "848F0424E2F994A0642AA085D439BC566480E71541CE29752E907D952C2A98BE"
+    },
+    {
+      "path": "docs/evidence/2026-10-09/oil-arrival-window-close-r377.md",
+      "sha256Utf8Lf": "E595AFB64F144EE24A9A5C7CC72AA2840F17B339F01BA9EB1DE6E35BEF2AAC8E"
+    },
+    {
+      "path": "docs/evidence/2026-10-09/oil-route-completion-r375.md",
+      "sha256Utf8Lf": "75B3D1EA847D8160FEBD6A2BC237FCAFBBDD6D67C6626265CC5212EC88239807"
+    },
+    {
+      "path": "docs/evidence/2026-10-09/stone-return-join-quarantine-r505.md",
+      "sha256Utf8Lf": "C6C1D9C3426316F762DCFD6AE6A7D66E03F80A707F6037507D7D187A0632CF2C"
+    },
+    {
+      "path": "docs/evidence/2026-10-09/stone-source-recovery-r449.md",
+      "sha256Utf8Lf": "19ABE9449A95C3F055ACA22FF4B65F8C715AA8FA2380FAC40A77C196CD8603C2"
+    },
+    {
+      "path": "docs/evidence/2026-10-09/ti-warp-demand-save-r440.md",
+      "sha256Utf8Lf": "AA2789AD72C9274B71FE0232A00ADA939CA710679640CB3FC4D14550414EAF2C"
+    },
+    {
+      "path": "docs/evidence/2026-10-09/warper-output-headroom-r388.md",
+      "sha256Utf8Lf": "9B6D55A4B750570F42B6117970C36881782DB2E21B8CED366705C5EE8858FF7F"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/coal-fuel-approach-state-change-r697.md",
+      "sha256Utf8Lf": "C43EBEC8C12D253B535EFFB266F29FB01849C6C7EA53B7B362471D763B6E79C6"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/current-full-source-long-r783.md",
+      "sha256Utf8Lf": "45AFDBE8C90D2D7C9D63B333C2661FAE7117DA9B0DB151F0621B94181A91CC4E"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/finite-mecha-fuel-stationary-north-r623.md",
+      "sha256Utf8Lf": "A11FDA6A367B87C5B78397B8F5E3A838D0C26F693AC39649D00C1B2A3D9669A7"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/full-source-readiness-r682.md",
+      "sha256Utf8Lf": "724EE1457E19DB1E3E21897A974FCB8D3F93D384F2B55B3BBAB33E2CF8FBA272"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/iron-source-connection-and-save-r753.md",
+      "sha256Utf8Lf": "D1D5AA11F246EA08886F19199F40C0C62A76743E2F79FBFD6459A344083C5605"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/iron-source-flow-and-full-readiness-r757.md",
+      "sha256Utf8Lf": "8FEFBC469B20C7738179425B13B5E06F0DED6FA4B33272354E2086E0B3231C44"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/iron40-miner-and-qualified-seam-r743.md",
+      "sha256Utf8Lf": "4C4CB378FAEA948C23E84A7A28B27EA4EDC7625FD372E7DB753AFE36F8C9AB47"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/near-iron-source-arrival-r729.md",
+      "sha256Utf8Lf": "9B6DB8AE326F47D1DBA71924CFB27641F95B147E8EBE1B7EEF8F16C756D0DD0C"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/passive-drift-maintenance-r605.md",
+      "sha256Utf8Lf": "BF49BBD3FCCEDA47C7D0664D9681ED5152ACD0AC2D0BC5C09536E0F4FCF790B1"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/rod-carry-and-window-closure-r763.md",
+      "sha256Utf8Lf": "2CB2C4765EAD6D3D3EC45BA81534B780629D94B5A7E419BBA2E99473A830CCAC"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/stationary-north-route-r626.md",
+      "sha256Utf8Lf": "97894804553C24EB1628095EDB13636973578C547E6CDEEB4883A2BA673E5997"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/stone-filter-sorter-r519.md",
+      "sha256Utf8Lf": "8BB6D67C932C606A9452EAE2D4B7E22C452D97B99B6D59E06553FB337E1BA1AA"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/stone-finite-material-kit-r546.md",
+      "sha256Utf8Lf": "B77BBD26FAF06565A67BFBF6E736D7FCA0BD7E9C8FF9354FF423D399496409E8"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/stone-fixed-recovery-r514.md",
+      "sha256Utf8Lf": "777875539BA57D169A9476AC6C3DABD58C1AF6C9033A629456ED73CE98E22740"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/stone-native-source-outlet-r536.md",
+      "sha256Utf8Lf": "7D94B8B2D50055EB813507D940190039B58E5C63CB3D440E29914E02D906DF92"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/stone-overpass-critical-interface-r568.md",
+      "sha256Utf8Lf": "6BF365307F5B6A13B9F4DB971F39EA55BA696193FE8372EAA1CA5C4F64E11FDC"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/stone-raised-dual-cover-r577.md",
+      "sha256Utf8Lf": "1076CB359E8F0A505D6D94AF8B6998A4B1A53D2E8B7B45DBDAD66F8CC6506F6A"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/stone-route-prefix-save-r585.md",
+      "sha256Utf8Lf": "31770256E872FD0F0FF62ED9DC33F2C627F66844D4111DE2C9D1A1CAF1D93B1C"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/stone-source-approach-r528.md",
+      "sha256Utf8Lf": "4F3727273F0C6354CCC57FA6A765B1B8A7BAC34A37E5553B0E7AF4245D991062"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/stone-source-seam-power-save-r641.md",
+      "sha256Utf8Lf": "DBE8A87C8D78CB7420A18E19DC4B262B5B8C57FCBA18233A867541F25506C95F"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/stone-uphill-prefix-r573.md",
+      "sha256Utf8Lf": "F9FBD01D11B43304CE0D26107C325788E027A2E7BF750169FF1A4917974B470C"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/warehouse-return-recovery-r665.md",
+      "sha256Utf8Lf": "C01DA9400EFBF8722C1D3827B16E1CB92114ED277234E33E521D971A8C289B29"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/warp-carry-approach-and-save-r766.md",
+      "sha256Utf8Lf": "DCAC3BD7D0CCDEE2C71992E57A3B212A31EBAB008D8A5506D37791A5B1596473"
+    },
+    {
+      "path": "docs/evidence/2026-10-10/warp-demand-and-current-source-r777.md",
+      "sha256Utf8Lf": "B5B48074964FA85DDD69218B6D07A81447DF60C66495611900D98FF29EA39773"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/consumer-output-and-process-r820.md",
+      "sha256Utf8Lf": "8D72787E98F50279A1837ECA318478B1AD7D6778B093E7001114826ACBFF6574"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/current-source-audit-performance-r931.md",
+      "sha256Utf8Lf": "2AF1247D5A06E0FED17E4D07DCB0B6B46B31C950603CD48E00F7DF0D8B295E83"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/finite-belt150-kit-saved-r1099.md",
+      "sha256Utf8Lf": "283B911A64F5712FDC58363E1CA6B08A77646C2AEEABBBCDAAD8FA6A57C4D9B7"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/finite-iron-route-approach-saved-r1109.md",
+      "sha256Utf8Lf": "A31CF30FDAC7D715FA9051347406144BCA119CBF26EE429BAA5CB1EC7CB8FC6F"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/finite-iron200-kit-saved-flow-r1094.md",
+      "sha256Utf8Lf": "5074D1FAF081874553F505401B01C7BFBEECCC17B2FB6940663B44C16F20BAB1"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/finite-source-refill-workflow-r914.md",
+      "sha256Utf8Lf": "5B4F5671F0F3D7DEFE61F615DEBD6ABA49CF618E579A2F2C4B067FE89E611734"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/iron-route-existing-silicon-barrier-r1114.md",
+      "sha256Utf8Lf": "6E315E121655FB2D373D518510DA67AC367D03714089E815E4AAEEC312459C46"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/known-walk-south-three-moves-and-bounded-save-process-r885.md",
+      "sha256Utf8Lf": "D2DE5115686B82FA027E05C5966850706065B4806B260EA89DB9386AC0308B24"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/magnet-feed-short-r807.md",
+      "sha256Utf8Lf": "278B0416ECE63D1CFE0FE6827C5930D84B6D5388C5B9206E5C9AD407976B8CA7"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/move-stop-save-and-window-close-r893.md",
+      "sha256Utf8Lf": "3C5F5F9585BCAD1966E109776EB837F03A43C656279EB31C5AD2C24752C1463C"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/native-inland-four-moves-shore-refusal-covering-save-r858.md",
+      "sha256Utf8Lf": "A2D88E38B35E6E53763616AE6298D01F1A24AFEC9EB9D6C8DA4BBF8D923598B4"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/native-inland-ti-approach-and-save-r852.md",
+      "sha256Utf8Lf": "AD53E87FCC1A46B86B4C807496456E122FDA44E1E2ECE15D9DB44984E55682CF"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/native-north-two-moves-bounded-save-process-r865.md",
+      "sha256Utf8Lf": "7539EA0FF99374776469394586E9190BBF70F76054883E7A648344C618451E0B"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/native-route-stop-save-and-process-r839.md",
+      "sha256Utf8Lf": "BBDD69F27191914218E13EA294367AA7721B1FDB6842C19A53281E29648A4A89"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/native-west-approach-and-save-r845.md",
+      "sha256Utf8Lf": "A68194F1CC74F0BC7914669C013871C73D9B43659D3F3C70E957ECA5139336D0"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/northeast-prefix-save-r1046.md",
+      "sha256Utf8Lf": "DE668990EFC6703A1034DD1782C329A16C2CE4E0122431F29E0866F1F5E5BC2C"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/northern-prefix-flow-r997.md",
+      "sha256Utf8Lf": "4B1842E3A138B8992306458DE8FB159623BBD9E15E1C9631DD3F439CBCCBDBE3"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/northern-two-move-save-r1055.md",
+      "sha256Utf8Lf": "AF7009D3489678B0737A2857DDC084211399EBCAA758CD5F9379967410C08EEC"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/one-magnet-feed-upgrade-r802.md",
+      "sha256Utf8Lf": "D05D003400CC89E62C78699F838C1024D5F42805DD44463E733AB6C64B74DF31"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/owned-material-custody-capacity-r924.md",
+      "sha256Utf8Lf": "893E0A8FADAFE881467FB267F9D0F0C45FA1A5F6682DC75E8F1788EC2323EE49"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/owned-stock-warp-demand-save-r1075.md",
+      "sha256Utf8Lf": "A3251172E103F6F8216F4D28115D054047FD23846337FBD4F77DA40D56CFC1BA"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/recent-flow-and-caller-recovery-r953.md",
+      "sha256Utf8Lf": "C3815323D0C0A85FA7881A25649E266CF060E2A38FE75578FB68863E75D89DB3"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/rod-capacity-custody-r988.md",
+      "sha256Utf8Lf": "54F0BE9961D0D3C928F71D48670DA85DF34E2E1E77D161F2D21D4FE80B8E4BE8"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/row-skirt-prefix-r1027.md",
+      "sha256Utf8Lf": "A18E7D4E39E511E76A35D913C9471D4ABAEB0BFCE787C51B3DBCE32573797D9A"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/saved13-window-close-r935.md",
+      "sha256Utf8Lf": "72B166261ACC157C6B1C67D906F0D8D9E77D275F2E55B02F99BA805E2789883B"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/saved17-flow-r1013.md",
+      "sha256Utf8Lf": "354BFF5B2C921A61BE02FFEE8EF0D6F852EC6A3841D7ECE86BF7CDDDF83360E5"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/shared-deuterium-iron-gap-window-close-r1088.md",
+      "sha256Utf8Lf": "90AC45092A8320093EB316BC16172A6E6DF7506E8BEE9199C6BFB1B8F403B538"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/south-turn-stall-save-r1038.md",
+      "sha256Utf8Lf": "27A3E3A74814435B84FA3C55CA8C0F645D9978B3C6BD1C7280BFF90AD1D6D9B8"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/ti-demand-withdrawal-and-short-samples-r896.md",
+      "sha256Utf8Lf": "55A7E59A4E37257DA004E9FAE367E74F62B741185505E0CB463A3919CF4454C5"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/ti-station-demand-restoration-r905.md",
+      "sha256Utf8Lf": "4D3A0AA8B4DCF4D272910B3EA892B00A8E7587004A15A92AC9A35E07A4655CF3"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/upper-bank-rod400-save-source-r1065.md",
+      "sha256Utf8Lf": "CA5426C659A6FCBA271AADC4B70187A90FCC066DB9BA73DA9162A1AB1457942B"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/warp-escape-save-r977.md",
+      "sha256Utf8Lf": "7FC4AD8B6F5D12EA53EE942AC1A221E042D9167F10A31CEF09F0D5AE7BB96BD2"
+    },
+    {
+      "path": "docs/evidence/2026-10-11/zero-accepted-shore-preview-r849.md",
+      "sha256Utf8Lf": "89856F3CE4BCFB39A58984A74903BA09F74C0C9E7C9C193FE3AD1560362274A9"
+    },
+    {
+      "path": "docs/evidence/2026-10-12/bounded-route-readonly-interfaces.md",
+      "sha256Utf8Lf": "73315C56893E2BC73CD2435F329332DF56D4F5CA49B1E25B06A2B5EC54CE0536"
+    },
+    {
+      "path": "docs/evidence/2026-10-12/fork-upstream-integration.md",
+      "sha256Utf8Lf": "6AE12CDBE04C600073ECCC604BF3D517EDCE802E2467C3AD4B7A21C4EC2F631B"
+    },
+    {
+      "path": "docs/evidence/2026-10-12/iron-interior-ramp-qualification-r1125.md",
+      "sha256Utf8Lf": "1DABCEBC7301728B8A435558CBF541EC0AAE85B2E53234B2817D5F8B1850BE40"
+    },
+    {
+      "path": "docs/evidence/2026-10-12/iron-multi-route-native-geometry-survey-r1176.md",
+      "sha256Utf8Lf": "5894C0D76D7AF3AE52BC04243419188603A73A3AD020C75D70C49FC97F5E1DCC"
+    },
+    {
+      "path": "docs/evidence/2026-10-12/iron-native-grid-batch-live-and-maintenance-r1197.md",
+      "sha256Utf8Lf": "F0DFA56C28B4454F1EDB28CC32EF592E5B2040AC62DF8C3C6971EFF14BFE4FDD"
+    },
+    {
+      "path": "docs/evidence/2026-10-12/iron-native-grid-point-generation-and-batch-reader-r1189.md",
+      "sha256Utf8Lf": "41E20503CFF483531E085BF9EB2DD99DBE168698C0847D50767139896A02F3B9"
+    },
+    {
+      "path": "docs/evidence/2026-10-12/iron-raised-underpass-and-seam-capability-r1183.md",
+      "sha256Utf8Lf": "15260071BF0BEAB1BC815C593997F61F04B53083BC0A0CD008C96E58A42A363D"
+    },
+    {
+      "path": "docs/experience-ledger.md",
+      "sha256Utf8Lf": "44082DC109CA6E7EEF22F3DBAA575A0822B98F99CF49B8A0EB7319E2AB2202B3"
+    },
+    {
+      "path": "docs/gameplay-timeline.md",
+      "sha256Utf8Lf": "89A8C8EEDC9E734F793575620D070252EA7EAFD9AF6526BE0AA3E76ADCBC4468"
+    },
+    {
+      "path": "docs/incident-fix-log.md",
+      "sha256Utf8Lf": "7097A249A744FA1C62B301D76671DE08EED9EB96299E63985DA49E536C182AB4"
+    }
+  ]
+}

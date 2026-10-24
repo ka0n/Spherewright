@@ -95,7 +95,9 @@ foreach ($file in @($iconPath, $readmeTemplatePath, $changelogPath)) {
 
 $sourceLicensePath = Join-Path $resolvedSourceRoot 'LICENSE'
 $sourcePlaybookPath = Join-Path $resolvedSourceRoot 'docs\agent-playbook.md'
-foreach ($file in @($sourceLicensePath, $sourcePlaybookPath)) {
+$sourceChineseLicensePath = Join-Path $resolvedSourceRoot 'LICENSE.zh-CN.md'
+$sourceChinesePlaybookPath = Join-Path $resolvedSourceRoot 'docs\agent-playbook.zh-CN.md'
+foreach ($file in @($sourceLicensePath, $sourcePlaybookPath, $sourceChineseLicensePath, $sourceChinesePlaybookPath)) {
     if (-not (Test-Path -LiteralPath $file -PathType Leaf)) {
         throw "Required source release file was not found: $file"
     }
@@ -119,6 +121,8 @@ try {
     Copy-Item -LiteralPath $changelogPath -Destination (Join-Path $stagingRoot 'CHANGELOG.md')
     Copy-Item -LiteralPath $sourceLicensePath -Destination (Join-Path $stagingRoot 'LICENSE')
     Copy-Item -LiteralPath $sourcePlaybookPath -Destination (Join-Path $stagingRoot 'AGENT-PLAYBOOK.md')
+    Copy-Item -LiteralPath $sourceChinesePlaybookPath -Destination (Join-Path $stagingRoot 'agent-playbook.zh-CN.md')
+    Copy-Item -LiteralPath $sourceChineseLicensePath -Destination (Join-Path $stagingRoot 'LICENSE.zh-CN.md')
 
     $readme = [IO.File]::ReadAllText($readmeTemplatePath)
     $readme = $readme.Replace('{{VERSION}}', $Version).Replace('{{TEAM_NAME}}', $TeamName)
@@ -132,7 +136,7 @@ try {
     $thunderstoreManifest = [ordered]@{
         name = $PackageName
         version_number = $Version
-        website_url = 'https://github.com/AvaloNero/Spherewright'
+        website_url = 'https://github.com/Arcueid77/Spherewright'
         description = 'MCP bridge for AI agents to observe and operate Icarus through normal DSP mechanics. / 让 AI 智能体通过 MCP 按正常机制观察并操作伊卡洛斯。'
         dependencies = @('xiaoye97-BepInEx-5.4.17')
     }
@@ -161,7 +165,7 @@ try {
         runtime = 'win-x64'
         sourceCommit = $gitCommit
         sourceDirty = $sourceDirty
-        supportedDspVersion = '0.10.35.29104'
+        supportedDspVersion = '0.10.35.29151'
         supportedBepInExVersion = '5.4.17.0'
         runtimeBlackBoxTested = $false
         createdAtUtc = [DateTimeOffset]::UtcNow.ToString('O')

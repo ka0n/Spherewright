@@ -1,15 +1,15 @@
-# Evidence records
+# Operational record moved to Spherewright-Lab
 
-This directory is for concise evidence records that support one bounded game or deployment stage. It complements, rather than replaces, the chronological [gameplay timeline](../gameplay-timeline.md) and the current [status entry](../current-status.md).
+[English](#english) · [简体中文](#中文)
 
-## One stage, one primary record
+## English
 
-- Give each bounded stage one primary protected record or manifest that identifies its inputs, terminal outcome, and scope.
-- Independent reviews should cite that record and state their own check; they must not turn a later review into a second execution stage.
-- Record whether a statement comes from raw output, a deterministic comparison, or an independent review. Do not turn a plan, preview, or offline test into a live result.
+This compatibility path points to the [fixed Lab record](https://github.com/Arcueid77/Spherewright-Lab/blob/14478a03c64c550e644c559405c8496b647552e7/releases/v0.4.0/evidence/README.md). It is historical evidence, not a current game instruction. For future work, read the current Lab rules/handoff and freshly verify the actual session.
 
-## Retention and scope
+The [byte-exact original](https://github.com/Arcueid77/Spherewright-Lab/blob/14478a03c64c550e644c559405c8496b647552e7/archive/imported-from-spherewright/e7d5f7d8661092b7c8089710488c448f290638be/docs/evidence/README.md) was imported from product fact commit `e7d5f7d8661092b7c8089710488c448f290638be`. That evidence snapshot and its provenance remain immutable.
 
-- Historical diaries, incidents, research, and evidence are retained. Do not delete or rewrite them merely because a later status supersedes their next step.
-- A current-status page is a navigation aid, not a replacement for historical evidence or a new authorization.
-- Keep public records sanitized: do not store real save names, paths, credentials, or reusable tokens.
+## 中文
+
+此兼容路径指向[固定 Lab 记录](https://github.com/Arcueid77/Spherewright-Lab/blob/14478a03c64c550e644c559405c8496b647552e7/releases/v0.4.0/evidence/README.md)。它属于历史证据，不是当前游戏操作指令。未来工作应阅读 Lab 当前规则与交接，并 fresh 核验实际 session。
+
+[按字节归档的原件](https://github.com/Arcueid77/Spherewright-Lab/blob/14478a03c64c550e644c559405c8496b647552e7/archive/imported-from-spherewright/e7d5f7d8661092b7c8089710488c448f290638be/docs/evidence/README.md)来自产品事实提交 `e7d5f7d8661092b7c8089710488c448f290638be`；该证据快照与来源保持不可变。

@@ -44,6 +44,11 @@ internal static class DSPGame
 
 internal sealed class GameSessionTracker : IDisposable
 {
+    internal bool IsCurrentSessionOwned { get; set; }
+    internal bool IsCurrentExactUnownedSession { get; set; }
+    internal bool IsCurrentSessionAuthorizedForNormalActions => IsCurrentSessionOwned || IsCurrentExactUnownedSession;
+    internal string? OwnedSaveName { get; set; }
+    internal string? SessionId { get; set; }
     internal long Revision { get; set; }
     internal string? ResumeAdoptionError { get; set; }
     internal SessionState Snapshot { get; } = new();

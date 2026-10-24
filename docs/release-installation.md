@@ -1,110 +1,83 @@
-# Installing a Spherewright release
+# Installing Spherewright
 
-The current unreleased 0.4 package target is Windows x64, Dyson Sphere Program `0.10.35.29104`, and BepInEx `5.4.17.0`. Its exact Spherewright version is recorded in `manifest.json` and reported by the installer. The 29104 source adaptation is not live-validated until cold deployment and protected resume succeed. Released 0.3.x local evidence remains scoped to `0.10.34.28529` and does not validate this package target. The package includes the Plugin and a self-contained MCP executable; end users do not need the repository, source code, or a .NET SDK.
 
-The established owned-session write policy is single-player Peaceful mode. The unreleased development source additionally authorizes ordinary actions on the exact manually loaded unowned session without a Peaceful, Passive, or aggressiveness gate when both `Safety.AllowWrites` and `Safety.AllowUnownedNormalWrites` are enabled. This does not add direct offensive combat actions. Sandbox state and resource multiplier are reported but do not block ordinary actions or protected recovery and never enable sandbox-tool calls. The validated reference world remains non-sandbox with 1× resources. Released v0.3.3 historical local validation covered a fresh 1× non-sandbox world and imported peaceful 100× and sandbox 1× worlds; it does not validate the current unreleased 0.4 package, DSP `0.10.35.29104`, or cross-computer use. Direct offensive combat actions, multiplayer or Nebula, broad third-party Mod compatibility, an arbitrary save picker, and arbitrary save-name loads are unsupported.
+## Fork authority and provenance
 
-Spherewright is distributed in two layouts with the same gameplay and MCP capabilities:
+This ka0n fork integrates only the pinned official release. Upstream Lab rules, installed-candidate evidence and author-specific approvals grant no fork authority. Current fork provenance remains in docs/current-status.md; Steering controls execution and deployment. Audit windows default to ten accepted actions; larger explicit windows need separate Steering authorization.
 
-- `Spherewright-<version>-win-x64.zip` is the complete manual installer package. It installs the Plugin into DSP and keeps the self-contained MCP server under `%LOCALAPPDATA%\Spherewright`.
-- `Spherewright-<version>-thunderstore.zip` is the Mod Manager package published as `Arcueid_77-Spherewright`. It lets Thunderstore Mod Manager or r2modman install and update BepInEx plus the Plugin, and keeps a single-file MCP executable alongside the Plugin.
+Public rich reads and normal writes have independent default-off gates. On the exact current unowned session, public rich reads require `Safety.AllowUnownedRichReads=true`. Ordinary non-combat actions require both `Safety.AllowWrites=true` and `Safety.AllowUnownedNormalWrites=true`, independently of the read gate. `OwnedBySpherewright=false` remains unchanged. Peaceful mode, Passive mode and Dark Fog aggressiveness (including unknown telemetry) are not unowned normal-action authority gates. Combat automation remains excluded. The private action reader never expands public reads. Same-star remote reads require public rich-read authority, an already resident factory and exact identity; normal actions stay local-planet-only.
 
-## Unreleased 0.4 development capabilities
+Authorized unowned Save uses the current native save identity without adoption, rename, owned copy or protected resume ticket. Unowned flight creates no owned FlightCheckpoint; unowned finite blueprint progress stays session/process-bound. Public blueprint inspection/export, Journal, Governor, Import, owned Save/Resume and checkpoint reload retain their separate protected ownership/provenance gates. Import still needs prepare disclosure followed by explicit confirmation. New worlds remain singleplayer, Peaceful, non-sandbox, 1×.
 
-### Development source: the current unowned world
+Passive-Drift evidence remains shared across separate readers, bound to the exact world/session/planet, original hash and original expiry. Internal reads do not renew evidence. Blueprint-v4 accepts only EOF or the exact trailer `04 00 00 00 00`; other suffixes reject. These rules do not bypass native validation, health/quarantine, idempotency, single-flight, terminal reconciliation or any recovery gate.
 
-The local unreleased source has two independent settings for the exact manually loaded session:
+[English](release-installation.md) · [简体中文](release-installation.zh-CN.md)
 
-- `Safety.AllowUnownedRichReads`, default `false`, controls public rich reads.
-- `Safety.AllowUnownedNormalWrites`, default `false`, controls normal-action authority together with `Safety.AllowWrites=true`.
+## Choose a version and layout
 
-For ordinary actions on that current unowned session, configure:
+Choose a version from the [official Releases](https://github.com/Arcueid77/Spherewright/releases) or a reviewed local archive. The package manifest identifies that build's version, source commit and payload hashes; use the matching checksum record. Historical production-acceptance source `2a7a98d1932c404e3a7abc2c11233d9c0b8780d9` and its original ZIP hashes are recorded in [validation](validation/v0.4.0.md). The separate 2026-10-17 package-callability source is `e018b7f45c70f5fe029418cad987af794b5cb9bf`; those historical packages retain their own source identity.
 
-```ini
-[Safety]
-AllowWrites = true
-AllowUnownedNormalWrites = true
+Frozen production acceptance used Windows x64, DSP `0.10.35.29145`, BepInEx `5.4.17.0` and one peaceful owned non-sandbox 1× local world. The cited e018 installation, callability and continuity checks used the same local environment on DSP `0.10.35.29151`. Runtime compatibility permits supported peaceful sandbox/resource-multiplier settings without adding sandbox actions, but broader 0.4 live coverage has not been established. v0.3.3 results retain their historical build scope.
+
+Both cited e018 layouts were actually installed through the official transaction path and independently passed all 64 MCP calls, including successful data/preparation and expected native safety refusals; matrix accepted/unknown counts were zero. The owner-confirmed original-primary migration, normal saving and subsequent same-version recovery preserved durable Journal and completed history. See the [fixed runtime report and package hashes](https://github.com/Arcueid77/Spherewright-Lab/blob/00f4359eef704bc7cd5c148438c05e0d3121bda6/operations/package-callability-2026-10-17.md) and [native validation](validation/native-29151-preflight.md). Evidence applies only to its cited source, packages and source/session scope; no new production long window is claimed. Any future expired 29145 primary still requires the exact prepared `29145→29151` disclosure and subsequent confirmation; active-primary evidence 5/6 keeps its previous scope.
+
+Two layouts provide the same gameplay/MCP capabilities:
+
+| Layout | Plugin | MCP |
+| --- | --- | --- |
+| `Spherewright-<version>-win-x64.zip` | manual installation into `BepInEx/plugins/Spherewright` | self-contained executable under `%LOCALAPPDATA%/Spherewright/mcp/<version>` by default |
+| `Spherewright-<version>-thunderstore.zip` | standard Thunderstore layout, identifier `Arcueid_77-Spherewright` | single-file executable alongside the Plugin |
+
+End users need no source checkout or .NET SDK. Keep Plugin, MCP and shared assemblies from one build. Exit DSP and stop the connected MCP process before installation; never overwrite loaded DLLs.
+
+## Manual package
+
+Install BepInEx 5 separately. Extract the complete package and keep it until verification succeeds. In the extracted directory:
+
+```powershell
+./install.ps1
 ```
 
-Rich reads remain independently optional. With rich reads disabled, public player/factory/progression/Overseer reads stay restricted while the internal action reader still supports authorized actions. Ownership remains `OwnedBySpherewright=false`; no import, adoption, owned save provenance, or resume ticket is created by ordinary actions. When `AllowUnownedNormalWrites=false`, unowned observation remains read-only.
+The installer verifies `manifest.json`, discovers DSP through `-DspDir`, `SPHEREWRIGHT_DSP_DIR` or Steam, and reports the exact Plugin directory and MCP executable in JSON. With multiple/nonstandard installations, supply the intended directory explicitly:
 
-Normal Save writes the currently loaded native save identity in place and verifies its saved tick from the same slot. It does not rename, clone or adopt the save. Unowned interplanetary flight keeps normal route, energy, approach and landing checks without a Spherewright FlightCheckpoint. Unowned finite blueprint progress is held in memory for the current `SessionId` and is discarded after session/world or process replacement. Public blueprint inspection/export remains owned-only.
+```powershell
+$dspDir = Read-Host 'Exact DSP installation directory'
+./install.ps1 -DspDir $dspDir
+```
 
-Unowned normal actions do not require Peaceful or Passive mode; Dark Fog aggressiveness is telemetry only. The ordinary action surface does not include enemy targeting, attacks, weapon control, or autonomous offensive turret control. Save Import, Owned Resume and protected FlightCheckpoint reload remain separate workflows.
+Reinstalling the same MCP version requires `-Force`; this does not bypass integrity, process, target-tree or pending-recovery checks. The installer does not start DSP, enable writes, install BepInEx or modify a save.
 
-These source capabilities are not part of released v0.3.x packages. This combined development source has no new deployment or live-validation claim; use current source status and actual MCP tools rather than documentation alone to determine whether a local build includes it.
-Current source also connects an explicitly chosen finite blueprint layout to Foundry's material intent and the same protected construction executor. It reports complete object costs, per-item routes/free boundary ports and immutable per-object steps; only fresh prepare/commit grants action authority. Native full-power single-item belt/basic-sorter capacity constrains routing, including boundary belts and sorter span. Unknown or advanced stacking capacity blocks this composition; this does not change ordinary blueprint support. Rated budget success is not fair splitting or certified transport throughput. Ordinary2011/2012 sorter removal has a guarded normal-recovery path for missing-end repair. Matching-build live validation is required for the chosen repair and blueprint layout.
+Register the returned `Spherewright.Mcp.exe` as a local stdio MCP server in your Agent host. Never pass a runtime descriptor, authentication token or save identity on its command line. Read the packaged `AGENT-PLAYBOOK.md` or MCP resource `spherewright://agent/playbooks/opening-movement-v1`. New packages from the maintained source also include Chinese companion guides; the frozen candidates retain their original contents.
 
-The bounded blueprint subset includes ordinary unstacked storage2101 with exact bans, mode and grid filters, but never contents. Physical connection ports are not inventory capacity. This bounded type/configuration subset and the six-object module result do not validate every allowed storage setting or layout combination in game; tests and tool descriptions alone are not game-run evidence.
+## Thunderstore layout
 
-The development source includes read-only Foundry/Governor proposals, bounded blueprint inspection/export, a separate finite blueprint prepare/commit/progress/cancel executor, and native single-building upgrades (manufacturing assemblers and Mk.I→Mk.II sorters only). Preview/proposal responses remain **non-executable data**, not write tokens. Finite execution preserves ordinary materials/drones. Owned progress uses save-bound restart reconciliation; unowned progress is session-only and discarded at process/session replacement. Complete three-stage factory work, departure preparation, and broader sustained expansion acceptance remain separate validation gates. Belt and advanced stacking sorter upgrades are not supported. Released 0.3.x packages do not gain these tools from documentation. Read the packaged Agent playbook and actual `tools/list`; unsupported types/settings reject, never silently disappear. Do not replace DLLs while DSP is running.
+Use the standard Thunderstore layout with the Plugin and matching single-file MCP together. The cited local standard-layout checks do not certify a separate Mod Manager/r2modman profile; verify the selected profile's actual components and MCP path.
 
-The 0.4 package smoke check requires the merged tool surface and its read-only annotations, native research-priority parameter, finite-build/Governor instructions, and agreement between the packaged playbook and MCP's embedded resource. It also checks normal protocol-only startup/exit. Passing these offline checks does **not** establish local gameplay, the ten-game-minute throughput target or cross-computer validation; those are recorded separately in the Roadmap.
-
-Current development site previews include separate advisory full base-load power budgets; unavailable, uncertain geometry or ambiguous coverage must not be treated as spare capacity. Governor retains an explicitly locked pre-execution throughput declaration durably, with target-chain findings separated from unattributed planet warnings; narrow proof that restored declaration data matches its original hash remains open. These source additions are not capabilities of an older installed package. Move completion also does not certify dry-land Walk state: the updated playbook permits only bounded, fresh-energy shore recovery to a recently verified Walk waypoint, not indefinite energy-draining Drift waits or blind path search.
-
-## Prerequisites
-
-- Install Dyson Sphere Program and BepInEx 5.
-- Exit DSP before installing or upgrading Spherewright.
-- Keep the extracted release package until installation has completed and its integrity check succeeds.
-
-## Install
-
-### Thunderstore Mod Manager or r2modman
-
-Install `Arcueid_77-Spherewright` for Dyson Sphere Program and launch the selected modded profile once. The declared `xiaoye97-BepInEx-5.4.17` dependency is installed by the manager. In the profile directory, locate:
+Install the selected version and its declared `xiaoye97-BepInEx-5.4.17` dependency through your manager. In that selected profile, locate:
 
 ```text
-BepInEx\plugins\Arcueid_77-Spherewright\Spherewright.Mcp.exe
+BepInEx/plugins/Arcueid_77-Spherewright/Spherewright.Mcp.exe
 ```
 
-Register that executable as a local stdio MCP server in the external Agent host. Do not pass a runtime descriptor, authentication token, or save identity on the command line. Updating Spherewright through the manager updates both the Plugin and that version's MCP executable together.
+Register it as local stdio MCP. Updating through the manager must keep Plugin and MCP together. Another profile/computer requires its own verification.
 
-The Thunderstore archive uses the store's standard package layout and static integrity checks. Its first runtime check should be performed in a separate Mod Manager profile or clean computer before it is treated as cross-computer validated.
+## Begin a session
 
-### Manual release package
+Spherewright starts observation-only. Enable `Safety.AllowWrites=true` only for intended structured actions, then restart DSP normally to load the setting.
 
-Extract the zip, open PowerShell in the extracted `Spherewright-<version>` directory, and run:
+**New world:** leave DSP at the idle main menu and ask the Agent to prepare the normal new-game flow. It creates a peaceful, non-sandbox, 1× `Spherewright_New_*` world. Read the playbook before moving; poll accepted actions to their original terminal result and use only bounded fresh recovery. Legacy `Spherewright_M0_*` names do not independently establish ownership.
 
-```powershell
-.\install.ps1
-```
+**Import a player-loaded save:** additionally opt into `Safety.AllowUserSaveImport=true`, restart DSP and manually load the intended supported peaceful save. Prepare import first; review its no-side-effect disclosure and explicitly confirm in a later conversation message. Only then may commit create and Header-verify an independent `Spherewright_Imported_*` copy through the normal save API. The original is unchanged. Its earlier history is not reconstructed; the owned copy's Journal starts at import. Manual play in the copy requires fresh observations and new prepares for later Agent writes.
 
-The installer verifies every packaged file against `manifest.json`, locates DSP through the explicit `-DspDir` argument, `SPHEREWRIGHT_DSP_DIR`, or Steam, and then installs the Plugin under `BepInEx\plugins\Spherewright`. The self-contained MCP server is installed under `%LOCALAPPDATA%\Spherewright\mcp\<version>` by default.
+**Resume an owned primary:** leave DSP at the idle menu and use only its exact protected ticket, embedded identity and durable Journal. Same-version resume is the default. A disclosed version migration or expired recovery requires its own later explicit confirmation. A filename prefix grants no ownership. Reauthorization durably consumes its ticket before native loading; normal Journal-bound default resume consumes it after native adoption and confirmed Journal continuity. Failed/interrupted accepted operations require investigation and original-action reconciliation, never a new-key replay.
 
-For a nonstandard DSP location:
+Back up the protected Journal together with ticket replicas. Missing, truncated, recreated or mismatched Journal continuity refuses resume or keeps resumed operations restricted; it does not silently create a replacement timeline. Consult the playbook for the exact native gates.
 
-```powershell
-.\install.ps1 -DspDir 'D:\Games\Dyson Sphere Program'
-```
+## Verify and recover
 
-The command returns JSON containing the exact installed Plugin directory and MCP executable. Register that `Spherewright.Mcp.exe` path as a stdio MCP server in the external Agent host; do not pass runtime descriptors, authentication tokens, or save identities as arguments. The package also includes the concise `AGENT-PLAYBOOK.md`; ordinary MCP hosts can discover and read the same content at `spherewright://agent/playbooks/opening-movement-v1`.
+- A modified/incomplete package or an active `DSPGAME` process is refused.
+- If installation leaves `needs_recovery` or a pending marker, preserve both operation directories, records and backups. Use the read-only preview and evidence-bound explicit restoration in [installation recovery](installation-recovery.md); do not delete the marker or move evidence to bypass refusal.
+- Installation transaction-crash recovery, another computer, broad third-party Mods, Dark Fog/combat and multiplayer/Nebula are not validated. A startup guard cannot stop an older Plugin already loaded in memory.
+- Report exact Spherewright/DSP/BepInEx versions, the structured error and sanitized evidence. Never publish Saves, save names, tokens, runtime descriptors or private paths.
 
-Reinstalling the same MCP version requires `-Force`. The installer never starts DSP, changes a save, enables writes, or installs BepInEx. Spherewright's generated BepInEx configuration remains observation-only by default; enable `Safety.AllowWrites` only when you intend to authorize structured commits. Importing a world that you loaded manually also requires the separate `Safety.AllowUserSaveImport=true` opt-in, followed at runtime by a fresh no-side-effect prepare and your subsequent explicit confirmation in the Agent conversation.
-
-If installation reports `needs_recovery` or leaves a pending marker, do not delete or overwrite it. Start with the preview and use only the evidence-hash-bound explicit restore described in the [repository recovery guide](https://github.com/AvaloNero/Spherewright/blob/main/docs/installation-recovery.md) and packaged `RECOVERY.md`. This is manual, bounded recovery evidence; it does not make upgrades atomic or close the legacy loaded-Plugin startup race.
-
-## Quick start
-
-### Start a new world
-
-Leave DSP at the idle main menu, set `Safety.AllowWrites=true`, restart DSP, and ask the Agent to create a new world. The normal new-game flow creates a peaceful, non-sandbox, 1× save named `Spherewright_New_*`. Before moving from the landing site, have the Agent read MCP resource `spherewright://agent/playbooks/opening-movement-v1` and follow its terminal-polling and bounded four-direction recovery rules. Legacy `Spherewright_M0_*` saves are not migrated or renamed and can still be resumed only through their exact protected tickets.
-
-### Continue an existing save
-
-For a development source build, you can leave a manually loaded world unowned and enable normal actions by setting both `Safety.AllowWrites=true` and `Safety.AllowUnownedNormalWrites=true`. Normal Save writes the current native save identity in place, without adopting it or creating protected restart provenance. `AllowUnownedRichReads` is a separate optional setting. Use the import workflow below only when you want a separate Spherewright-owned copy.
-Set `Safety.AllowWrites=true` and `Safety.AllowUserSaveImport=true`, restart DSP, then manually load the intended supported save. Ask the Agent to prepare import; review its disclosure and reply with a later explicit confirmation. Only then may commit create and Header-verify an independent `Spherewright_Imported_*` copy. The original save remains unchanged. Continue manual and Agent play in the copy, and after a restart leave DSP at the main menu and use protected resume. Whenever you operate that copy manually, the Agent must fresh-read it and prepare later writes with the current state hashes instead of reusing stale observations or plans.
-
-A Spherewright-looking filename never grants ownership. Import does not provide arbitrary save selection or loading, and the imported copy's journal begins at the import point rather than reconstructing earlier history.
-
-Every newly issued protected-resume ticket records the owned copy's current durable journal checkpoint. Keep the protected runtime journal data together with the resume-ticket replicas during backup or isolated package testing. If that journal is missing, recreated, truncated, or belongs to another tracking boundary, Spherewright refuses resume before gameplay and keeps the one-time ticket available for an exact repair and retry; it does not silently create a replacement timeline.
-
-The repository records offline, local-live, and cross-computer-live evidence separately. Released v0.3.3 has historical local import evidence for the sandbox and non-1× cases above; that evidence does not validate the current unreleased 0.4 package or cross-computer import use.
-
-## Verify or troubleshoot
-
-- A modified or incomplete package is rejected before installation.
-- The installer refuses to run while `DSPGAME` is active so it cannot overwrite loaded assemblies.
-- If more than one DSP installation is found, pass the intended directory explicitly with `-DspDir`.
-- Report the Spherewright version, supported DSP/BepInEx versions, structured error code, and sanitized state evidence. Never publish tokens, plan tokens, runtime descriptors, save names, or save files.
+See [release notes](release-notes/v0.4.0.md), [validation](validation/v0.4.0.md) and [Lab evidence](sample-validation.md). Historical installation/recovery records remain evidence for their stated builds, not commands to replay.

@@ -113,7 +113,11 @@ internal sealed class SpherewrightBridgeHost : IDisposable
             sessionTracker,
             normalActionGameStateReader,
             flightCheckpoints,
-            new BlueprintBuildStore(configuration.RuntimeDescriptorDirectory, gameVersion, sessionTracker, logger));
+            new BlueprintBuildStore(configuration.RuntimeDescriptorDirectory, gameVersion, sessionTracker, logger, () =>
+            {
+                var journal = gameplayJournalManager.CaptureOnMainThread(sessionTracker.SessionId);
+                return journal.Success ? journal.Value : null;
+            }));
         var userSaveImportCoordinator = new UserSaveImportCoordinator(
             configuration.AllowUserSaveImport,
             configuration.AllowWrites,

@@ -19,11 +19,12 @@ internal sealed partial class NormalGameActionCoordinator
         internal string CompletionTopologyHash = string.Empty;
         internal string BindingHash = string.Empty;
         internal string CargoHash = string.Empty;
+        internal EmptyBeltPathState? ElevatedEmptyPath;
         internal List<FactoryConnectionSnapshot> Connections = new List<FactoryConnectionSnapshot>();
     }
 
     private static bool TryCaptureBeltSource(PlanetFactory factory, int entityId,
-        out BeltSourceState? state, out string reason)
+        out BeltSourceState? state, out string reason, bool requireEmptyElevatedPath = false)
     {
         state = null;
         reason = "belt_source_identity_unavailable";
@@ -89,6 +90,13 @@ internal sealed partial class NormalGameActionCoordinator
                 Connections = connections, TopologyHash = topology, CompletionTopologyHash = completionTopology,
                 BindingHash = CanonicalStateHash.Combine("belt-source-binding-v1", fields.ToArray()),
                 CargoHash = CanonicalStateHash.Combine("belt-source-cargo-v1", cargoFields.ToArray()) };
+            if (requireEmptyElevatedPath)
+            {
+                if (!TryCaptureEmptyBeltPath(factory, entityId, 0, out var empty, out reason))
+                { state = null; return false; }
+                state.ElevatedEmptyPath = empty;
+                state.BindingHash = BeltSourceReusePolicy.BindEmptyElevatedPathEvidence(state.BindingHash, empty!.BindingHash);
+            }
             reason = string.Empty;
             return true;
         }
@@ -165,7 +173,8 @@ internal sealed partial class NormalGameActionCoordinator
             || steps[0].InputObjectId != bound.EntityId || steps[0].InputFromSlot != 0 || steps[0].InputToSlot != 1
             || steps[0].InputStepIndex != -1 || steps[steps.Count - 1].OutputObjectId != (destination?.EntityId ?? 0)
             || (destination is not null && (destination.SourcePath?.AnchorId != bound.EntityId || !EmptyJoinBindingsMatch(factory, destination)))
-            || !TryCaptureBeltSource(factory, bound.EntityId, out var fresh, out reason)
+            || !TryCaptureBeltSource(factory, bound.EntityId, out var fresh, out reason,
+                requireEmptyElevatedPath: steps[0].BeltPathMode == Spherewright.Contracts.Actions.BeltPathModes.NativeElevatedGrid)
             || !BeltSourceReusePolicy.SameEvidence(bound.BindingHash, fresh!.BindingHash)
             || !BeltSourceReusePolicy.Supports(bound.EntityId, fresh.ItemId, item.ID, 0, 0, fresh.Tilt, false,
                 fresh.Connections[0].OtherObjectId, fresh.Connections.Skip(1).Take(3).Count(c => c.OtherObjectId != 0))) return false;
@@ -192,9 +201,23 @@ internal sealed partial class NormalGameActionCoordinator
         if (bound is null) { tool.CreatePrebuildsWithDetachedCommand(); return; }
         if (!SourceCoverMatches(cover, bound) || !ReferenceEquals(cover!.output, newPreviews[0])
             || !TryCaptureBeltSource(factory, bound.EntityId, out var before, out _)
-            || before!.Connections[0].OtherObjectId != 0
-            || !BeltSourceReusePolicy.SameEvidence(bound.BindingHash, before.BindingHash))
+            || before!.Connections[0].OtherObjectId != 0)
             throw new InvalidOperationException("The exact non-removing source cover changed before native construction.");
+
+        // Keep the raw whole-path binding for the post-create preservation proof.
+        // The prepared elevated binding also includes the independently captured
+        // empty/open path. Re-capture that evidence before create, without mixing
+        // its wrapped hash into the raw before/after comparison.
+        string? currentEmptyPathBinding = null;
+        if (bound.ElevatedEmptyPath is not null)
+        {
+            if (!TryCaptureEmptyBeltPath(factory, bound.EntityId, 0, out var empty, out _))
+                throw new InvalidOperationException("The exact empty elevated source path changed before native construction.");
+            currentEmptyPathBinding = empty!.BindingHash;
+        }
+        if (!BeltSourceReusePolicy.MatchesPreparedCreationBinding(bound.BindingHash, before.BindingHash,
+            bound.ElevatedEmptyPath?.BindingHash, currentEmptyPathBinding))
+            throw new InvalidOperationException("The exact non-removing source binding changed before native construction.");
         tool.CreatePrebuildsWithDetachedCommand();
         if (cover.objId != bound.EntityId || !SourceCoverMatches(cover, bound)
             || !TryCaptureBeltSource(factory, bound.EntityId, out var after, out _)

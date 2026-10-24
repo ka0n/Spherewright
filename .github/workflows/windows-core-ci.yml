@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - integration/upstream-2026-10-12
+      - integration/upstream-v0.4.0-20261024
   pull_request:
     branches:
       - main
@@ -56,3 +57,9 @@ jobs:
       - name: Check package surface policy without game dependencies
         shell: pwsh
         run: ./scripts/test-package-surface-policy.ps1
+
+      - name: Verify complete bilingual documentation and links
+        shell: pwsh
+        run: |
+          ./scripts/verify-documentation.ps1
+          ./scripts/test-documentation-retention.ps1

@@ -31,6 +31,7 @@
     <Compile Include="..\..\src\Spherewright.Plugin\Game\NormalGameActionCoordinator.BlueprintAuthority.cs" Link="Production\NormalGameActionCoordinator.BlueprintAuthority.cs" />
     <Compile Include="..\..\src\Spherewright.Plugin\Game\NormalGameActionCoordinator.BlueprintCancel.cs" Link="Production\NormalGameActionCoordinator.BlueprintCancel.cs" />
     <Compile Include="..\..\src\Spherewright.Plugin\Game\BlueprintBuildStore.cs" Link="Production\BlueprintBuildStore.cs" />
+    <Compile Include="..\..\src\Spherewright.Plugin\Game\GameplayJournalIdentity.cs" Link="Production\GameplayJournalIdentity.cs" />
     <Compile Include="..\..\src\Spherewright.Plugin\Transport\PluginJson.cs" Link="Production\PluginJson.cs" />
     <Compile Include="..\..\src\Spherewright.Plugin\Game\GameCallResult.cs" Link="Production\GameCallResult.cs" />
   </ItemGroup>

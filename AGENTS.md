@@ -1,3 +1,5 @@
+[English](AGENTS.md) · [简体中文](AGENTS.zh-CN.md)
+
 # AGENTS.md — 当前执行规范
 
 Spherewright 是《戴森球计划》的外部 Agent 控制层，不内置 LLM、自主目标规划或无界扩产循环。当前开发版本为 **0.4.0 Overseer / Foundry / Governor**：诊断、有限施工与配平，并为跨星系扩张准备；实际跨恒星航行属于 0.5。版本验收与发行门见 [ROADMAP.md](ROADMAP.md)，事实进度只看 [当前快照](docs/current-status.md)，不可用历史段落替代新现场。
